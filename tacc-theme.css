@@ -1,0 +1,103 @@
+/* Global Style */
+
+body, html {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 16px;
+  color: black;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  height: 100vh;
+}
+
+/* Header and Footer */
+
+.footer {
+  position: sticky;
+  top: 100%;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  border-top: 1px solid #e0e0e0;
+  background-color: #21272a;
+}
+.footer .logo img{
+  width: 140px;
+}
+.footer .item {
+  font-size: 0.8rem;
+  color: white;
+}
+.footer .item a {
+  color: white;
+}
+
+/* Launchpad Area */
+.launchpad {
+  background-color: #f5f5f5;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+.launchpad .options {
+  display: flex;
+  gap: 1rem;
+}
+.launchpad .option {
+  display: flex;
+  flex: 0 1 33%;
+  padding-top: .6rem;
+  padding-bottom: .6rem;
+  box-shadow: rgba(26, 26, 26, 0.07) 0px 1px 0px 0px;
+  background-color: white;
+  border-radius: 0.25rem;
+  border: 1px solid #e0e0e0;
+  cursor: pointer;
+}
+.launchpad .option .image {
+  flex: 0 0 27%;
+  text-align: center;
+  align-content: center; 
+  font-size: 2rem;
+  padding: 0.6rem;
+}
+.launchpad .option-large .image {
+  flex: 0 0 33%;
+  margin-right: 1rem;
+}
+.launchpad .option .text {
+  align-content: center; 
+  padding-right: 1rem;
+}
+.launchpad .option .text .line1 {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+.launchpad .option .text .line2 {
+  font-size: 0.9rem;
+}
+
+.launchpad.secondary {
+  background-color: white;
+}
+
+/* Table */
+table {
+  text-align: center;
+}
+table thead {
+  background-color: #f5f5f5;
+  border-top: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+}
+table thead th {
+  border: none!important;
+}
+
+table .badge {
+  border-radius: .5rem;
+  background-color: rgba(0, 0, 0, .06);
+  padding: 2px .5rem;
+}
+
+table .badge.green {
+  color: white;
+  background-color: #2ecc71;
+}

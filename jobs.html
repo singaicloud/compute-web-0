@@ -171,18 +171,7 @@
                             );
                         })
                         .catch(error => {
-                            var response = {'demo-project': [{'Namespace': 'demo-project', 'Container ID': '2811db29', 'Container Name': 'container-cmljsf', 'Creation Time': '2024-07-24 17:23:39', 'CPU Limit': '10', 'Memory Limit': '1Gi', 'GPU Limit': '0', 'CPU Request': '10', 'Memory Request': '1Gi', 'GPU Request': '0', 'Status': 'Running', 'Start Time': '2024-07-24 17:23:39', 'Image': 'nginx:stable-perl', 'Image ID': '3614a555', 'Node': 'cpu02', 'Pod IP': '10.233.126.30', 'Creator': 'project-admin', 'Cluster': 'Your_Cluster_Name', 'Storage': {'kube-api-access-5xstk': '/var/run/secrets/kubernetes.io/serviceaccount'}}, {'Namespace': 'demo-project', 'Container ID': 'bc3623f7', 'Container Name': 'nginx', 'Creation Time': '2024-07-24 19:15:29', 'CPU Limit': '1', 'Memory Limit': '100Mi', 'GPU Limit': 'N/A', 'CPU Request': '1', 'Memory Request': '100Mi', 'GPU Request': 'N/A', 'Status': 'Running', 'Start Time': '2024-07-24 19:15:29', 'Image': 'nginx:stable-perl', 'Image ID': '3614a555', 'Node': 'cpu02', 'Pod IP': '10.233.126.31', 'Creator': 'project-admin', 'Cluster': 'Your_Cluster_Name', 'Storage': {'kube-api-access-g7m9x': '/var/run/secrets/kubernetes.io/serviceaccount'}}]};
-                            var row_data = []
-                            Object.keys(response).forEach(function(namespace) {
-                                row_data.push(...response[namespace])
-                            });
-                            tacc.render_table(
-                                response, 
-                                row_data, 
-                                header_render,
-                                row_render,
-                                ".main-table"
-                            );
+                            console.log(error);
                         });
                 }
                 // Fetch and render the table on page load

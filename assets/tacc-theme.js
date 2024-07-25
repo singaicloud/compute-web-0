@@ -4,27 +4,23 @@ class TACCTheme {
         this.version = '0.1';
     }
 
-    render_table(header, data, target) {
+    render_table(table_raw, rows_raw, header_render, row_render, target) {
+        var rows = [];
+        rows_raw.forEach((row)=>{
+            var rendered_row = row_render(row, table_raw);
+            // check if it is a row or a row array
+            if (Array.isArray(rendered_row)) {
+                rendered_row.forEach((r)=>{
+                    rows.push(r);
+                });
+            } else {
+                rows.push(rendered_row);
+            }
+        }); 
         let render = $.create('table', {
             contents: [
-                $.create('thead', {
-                    contents: [
-                        $.create('tr', {
-                            contents: header.map(function(cell) {
-                                return $.create('th', {contents: cell})
-                            })
-                        })
-                    ]
-                }),
-                $.create('tbody', {
-                    contents: data.map(function(row) {
-                        return $.create('tr', {
-                            contents: row.map(function(cell) {
-                                return $.create('td', {contents: cell})
-                            })
-                        })
-                    })
-                })
+                header_render(table_raw),
+                {tag: 'tbody', contents: rows}
             ]
         });
         $(target)._.contents(render);

@@ -77,7 +77,9 @@ a:hover {
   position: sticky;
   z-index: 99999;
   top: 0;
-  background-color: white;
+  background: rgba(249, 249, 249, 0.56);
+  backdrop-filter: blur(9.5px);
+  -webkit-backdrop-filter: blur(9.5px);
 }
 .menubar .container>.columns::after {
   flex: 1;
@@ -87,10 +89,10 @@ a:hover {
   flex: 1;
   display: flex;
   align-items: center; /* align vertical */
-  height: 70px;
+  height: 76px;
 }
 .menubar .logo img {
-  height: 32px;
+  height: 36px;
 }
 .menubar .items {
   justify-content: center;
@@ -117,24 +119,36 @@ a:hover {
   position: sticky;
   top: 100%;
   padding-top: 1rem;
-  padding-bottom: 1rem;
+  padding-bottom: 2rem;
   border-top: 1px solid #e0e0e0;
-  background-color: #21272a;
+  letter-spacing: .0025em;
+  background-color: #f9f9f9!important;
+}
+.footer .content {
+  font-size: .85rem;
+  margin-bottom: 2rem;
+}
+.footer .logo {
+  padding-top: 18px;
+  margin-right: -10px;
 }
 .footer .logo img{
-  width: 140px;
+  width: 140px
 }
 .footer .item {
-  font-size: 0.8rem;
-  color: white;
+  margin-top: 1rem;
 }
-.footer .item a {
-  color: white;
+.footer .item-title {
+  font-weight: 600;
+  color: #616161;
+}
+.footer .copyright {
+  font-size: 0.8rem;
 }
 
 /* Launchpad Area */
 .launchpad {
-  background-color: #f5f5f5;
+  background-color: #f9f9f9;
   padding-top: 2rem;
   padding-bottom: 2rem;
 }
@@ -183,6 +197,7 @@ a:hover {
 /* Table */
 .table {
   text-align: center;
+  cursor: default;
 }
 .table thead {
   background-color: #f5f5f5;
@@ -192,14 +207,31 @@ a:hover {
 .table thead th {
   border: none!important;
 }
+.table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+.table tbody tr:last-child {
+  border-bottom: 1px solid #e0e0e0;
+}
 .table .badge {
+  display: flex;
+  width: fit-content;
+  margin: 0 auto;
+  align-items: center;
+  font-size: .85rem;
   border-radius: .5rem;
   background-color: rgba(0, 0, 0, .06);
   padding: 2px .5rem;
 }
-.table .badge.green {
-  color: white;
-  background-color: #2ecc71;
+.table .badge::before {
+  content: ' • ';
+  font-size: 1.1rem;
+  margin-right: .5rem;
+  flex: 1;
+}
+.table .badge.running::before {
+  color: #2ecc71;
+  flex: 1;
 }
 
 /* Form */

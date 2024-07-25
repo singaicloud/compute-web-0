@@ -23,10 +23,10 @@
     <div class="menubar">
         <div class="container">
             <div class="columns is-multiline is-desktop is-align-items-center is-justify-content-center">
-                <div class="column is-narrow logo has-text-centered"><a href="/jobs.html"><img src="./assets/tacc-logo.png"></a></div>
+                <div class="column is-narrow logo has-text-centered"><a href="/"><img src="./assets/tacc-logo.png"></a></div>
                 <div class="column has-text-centered">
                     <div class="columns is-mobile is-align-items-center items is-multiline">
-                        <div class="column is-narrow item"><a href="/jobs.html">Jobs</a></div>
+                        <div class="column is-narrow item"><a href="/">Jobs</a></div>
                         <div class="column is-narrow item"><a href="#">Storage</a></div>
                         <div class="column is-narrow item"><a href="#">Images</a></div>
                         <div class="column is-narrow item"><a href="#">Space</a></div>
@@ -41,7 +41,7 @@
             document.addEventListener('DOMContentLoaded', function(){
                 // Function to fetch images from the API and populate the select box
                 function fetchImages() {
-                    fetch("http://api.tacc.ust.hk:443/images")
+                    fetch("https://api.tacc.ust.hk/images")
                         .then(response => response.json())
                         .then(images => {
                             var select = document.querySelector('select[name="image"]');
@@ -102,7 +102,7 @@
                         });
                     });
                     
-                    fetch('http://api.tacc.ust.hk:443/create-container', {
+                    fetch('https://api.tacc.ust.hk/create-container', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'

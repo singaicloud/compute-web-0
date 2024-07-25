@@ -67,9 +67,15 @@
     <section class="section content"> 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
+                function action(event, id){
+                    return (e)=>{
+                        e.stopPropagation(); // so that the table row will not expand
+                        alert(`Trigger ${event} ${id}`);
+                    }
+                };
 
                 function row_render(data, table){
-                    var header = ["Namespace", "Container ID", "Container Name", "Creation Time", "CPU Limit", "Memory Limit", "GPU Limit", "Status", "Start Time"];
+                    var header = ["Namespace", "Container ID", "Container Name", "Creation Time", "CPU Limit", "Memory Limit", "GPU Limit", "Status", "Action"];
                     var result = []
                     var display = $.create("tr", {
                         events: {
@@ -91,6 +97,30 @@
                                             return $.create("span", {
                                                 className: "badge " + data[key].toLowerCase(),
                                                 contents: data[key]
+                                            });
+                                        case "Action":
+                                            return $.create("div", {
+                                                className: "actions",
+                                                contents: [
+                                                    {   tag: "div",
+                                                        events: {
+                                                            click: action("edit", data["Container ID"])
+                                                        },
+                                                        contents: {
+                                                            tag:"i", 
+                                                            className: "fa-regular fa-pen-to-square"
+                                                        }
+                                                    },
+                                                    {   tag: "div", 
+                                                        events: {
+                                                            click: action("stop", data["Container ID"])
+                                                        },
+                                                        contents: {
+                                                            tag:"i", 
+                                                            className: "fa-solid fa-ban"
+                                                        }
+                                                    },
+                                                ]
                                             });
                                         default:
                                             return data[key];
@@ -116,7 +146,7 @@
                 }
 
                 function header_render(){
-                    var header = ["Namespace", "Container ID", "Container Name", "Creation Time", "CPU", "Memory", "GPU", "Status", "Start Time"];
+                    var header = ["Namespace", "Container ID", "Container Name", "Creation Time", "CPU", "Memory", "GPU", "Status", "Action"];
                     return $.create("thead", {
                         tags: "tr",
                         contents: header.map((key) =>

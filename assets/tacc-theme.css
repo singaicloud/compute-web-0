@@ -199,6 +199,9 @@ a:hover {
   text-align: center;
   cursor: default;
 }
+.table td, .table th {
+  vertical-align: middle!important;
+}
 .table thead {
   background-color: #f5f5f5;
   border-top: 1px solid #e0e0e0;
@@ -232,6 +235,14 @@ a:hover {
 .table .badge.running::before {
   color: #2ecc71;
   flex: 1;
+}
+.table .actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+.table .actions div {
+  cursor: pointer;
 }
 
 /* Form */

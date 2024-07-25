@@ -30,6 +30,21 @@ class TACCTheme {
         $(target)._.contents(render);
         return render;
     }
+
+    extract_form(target) {
+        var data = {};
+        $$(target + ' input, select').forEach(function(input){
+            // use switch based on type
+            switch($(input).getAttribute('type')){
+                case 'checkbox':
+                    data[$(input).getAttribute('name')] = $(input).checked;
+                    break;
+                default:
+                    data[$(input).getAttribute('name')] = $(input).value;
+            }
+        });
+        return data;
+    }
 }
 
 const tacc = new TACCTheme();

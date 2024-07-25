@@ -1,0 +1,149 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TACC | iSING Lab HKUST | Scalable AI Infrastructure Designed for Evolving Machine Learning Research</title>
+    <script src="./assets/bliss.js"></script>
+    <link rel="stylesheet" href="./assets/bulma.min.css">
+    <link href="./assets/bulma-divider.min.css" rel="stylesheet">
+
+    <link href="./assets/style.css" rel="stylesheet">
+    <link href="./tacc-theme.css" rel="stylesheet">
+    <script src="./tacc-theme.js"></script>
+    
+    <script src="https://kit.fontawesome.com/99d5980073.js" crossorigin="anonymous"></script>
+
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="menubar">
+        <div class="container">
+            <div class="columns is-multiline is-desktop is-align-items-center is-justify-content-center">
+                <div class="column is-narrow logo has-text-centered"><img src="./assets/tacc-logo.png"></div>
+                <div class="column has-text-centered">
+                    <div class="columns is-mobile is-align-items-center items is-multiline">
+                        <div class="column is-narrow item"><a href="#">Jobs</a></div>
+                        <div class="column is-narrow item"><a href="#">Storage</a></div>
+                        <div class="column is-narrow item"><a href="#">Images</a></div>
+                        <div class="column is-narrow item"><a href="#">TACC Space</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="section launchpad">
+        <div class="container">
+            <div class="options">
+                <div class="option">
+                    <div class="image"><i class="fa-solid fa-book"></i></div>
+                    <div class="text">
+                        <div class="line1">Quick Launch</div>
+                        <div class="line2">Create a quick runtime as a notebook</div>
+                    </div>
+                </div>
+                <div class="option">
+                    <div class="image"><i class="fa-solid fa-list-check"></i></div>
+                    <div class="text">
+                        <div class="line1">Launch</div>
+                        <div class="line2">Choose your runtime specifications</div>
+                    </div>
+                </div>
+                <div class="option">
+                    <div class="image"><i class="fa-solid fa-database"></i></div>
+                    <div class="text">
+                        <div class="line1">Manage Storage</div>
+                        <div class="line2">Access your cloud storage for all jobs</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section form"> 
+        <script> 
+            $.ready().then(function(){
+                $('select[name="image"]')._.contents([
+                    {tag: 'option', contents: 'Option 1'},
+                    {tag: 'option', contents: 'Option 2'},
+                    {tag: 'option', contents: 'Option 3'}
+                ]);
+                $('#submit').addEventListener('click', function(){
+                    var data = tacc.extract_form('.main-form');
+                    console.log(data);
+                });
+            });
+        </script>
+        <div class="container main-form">
+            <div class="columns is-multiline">
+                <div class="column is-12">
+                    <div class="title">Create a Job</div>
+                    <div class="subtitle">A job creates with your choice of container image and runtime specifications</div>
+                </div>
+            </div>
+            <div class="columns is-multiline">
+                <div class="column is-6 field">
+                    <label class="label">Container Name</label>
+                    <div class="control">
+                        <input class="input" type="text" name="name" value="my_container" placeholder="Text input">
+                    </div>
+                </div>
+            </div>
+            <div class="columns is-multiline">
+                <div class="column is-12 field">
+                    <label class="label">Images</label>
+                    <div class="control">
+                        <div class="select">
+                            <select name="image"></select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="column is-12 field">
+                    <label class="checkbox">
+                        <input type="checkbox" name="auto_restart" /> Auto Restart
+                    </label>
+                </div>
+
+                <div class="column is-6 field">
+                    <div class="control">
+                        <button class="button is-primary" id="submit">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section launchpad">
+        <div class="container">
+            <div class="options">
+                <div class="option option-large">
+                    <div class="image"><img src="./assets/workflow.png"></div>
+                    <div class="text">
+                        <div class="line1">TACC Space</div>
+                        <div class="line2">Explore pre-configured container images and datasets </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <footer class="section footer">
+        <div class="container">
+            <div class="columns is-align-items-center">
+                <div class="logo column is-narrow"><img src="assets/tacc-logo-white.png" /></div>
+                <div class="column item is-narrow"><a href="mailto:tacc-contact@lists.ust.hk">Contact Us</a></div>
+                <div class="column item is-narrow"><a href="https://ising.cse.ust.hk" target="_blank">About SING 星畅</a></div>
+            </div>
+            
+        </div>
+    </footer>
+
+</body>
+</html>

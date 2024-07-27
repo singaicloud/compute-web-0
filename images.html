@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TACC | Scalable AI Infrastructure Designed for Evolving Machine Learning Research</title>
+    
+    <!-- Bluma CSS and Bliss JS-->
+    <script src="assets/bliss.js"></script>
+    <link rel="stylesheet" href="assets/bulma.min.css">
+
+    <!-- TACC Theme files -->
+    <link href="assets/tacc-theme.css" rel="stylesheet">
+    <script src="assets/tacc-theme.js"></script>
+    
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/99d5980073.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="menubar">
+        <div class="container">
+            <div class="columns is-multiline is-desktop is-align-items-center is-justify-content-center">
+                <div class="column is-narrow logo has-text-centered"><a href="/jobs.html"><img src="./assets/tacc-logo.png"></a></div>
+                <div class="column has-text-centered">
+                    <div class="columns is-mobile is-align-items-center items is-multiline">
+                        <div class="column is-narrow item"><a href="/jobs.html">Jobs</a></div>
+                        <div class="column is-narrow item"><a href="#">Storage</a></div>
+                        <div class="column is-narrow item"><a href="#">Images</a></div>
+                        <div class="column is-narrow item"><a href="#">Space</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="section launchpad">
+        <div class="container">
+            <div class="options">
+                    <div class="option">
+                        <div class="image"><i class="fa-solid fa-book"></i></div>
+                        <div class="text">
+                            <a href="/launch.html"><div class="line1">Quick Launch</div></a>
+                            <div class="line2">Create a quick runtime as a notebook</div>
+                        </div>
+                    </div>
+                <div class="option">
+                    <div class="image"><i class="fa-solid fa-list-check"></i></div>
+                    <div class="text">
+                        <div class="line1">Launch</div>
+                        <div class="line2">Choose your runtime specifications</div>
+                    </div>
+                </div>
+                <div class="option">
+                    <div class="image"><i class="fa-solid fa-database"></i></div>
+                    <div class="text">
+                        <div class="line1">Manage Storage</div>
+                        <div class="line2">Access your cloud storage for all jobs</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section content"> 
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                function action(event, id){
+                    return (e)=>{
+                        e.stopPropagation(); // so that the table row will not expand
+                        alert(`Trigger ${event} ${id}`);
+                    }
+                };
+
+                function row_render(data, table){
+                    var header = ["ID", "Repository", "CreatedAt", "Size", "Tag"];
+                    var result = [];
+                    var display = $.create("tr", {
+                        events: {
+                            click: function(){
+                                var expanded = this.nextElementSibling;
+                                if (expanded.style.visibility === "visible") {
+                                    expanded.style.visibility = "collapse";
+                                } else {
+                                    expanded.style.visibility = "visible";
+                                }
+                            }
+                        },
+                        contents: header.map((key) =>
+                            ({
+                                tag:"td", contents: data[key]
+                            })
+                        )
+                    });
+                    var expanded = $.create("tr", {
+                        contents: { 
+                            tag: "td",
+                            colspan: header.length,
+                            contents: {
+                                tag: "div",
+                                contents: JSON.stringify(data),
+                            },
+                        },
+                        style: {visibility: "collapse"},
+                    });
+                    result.push(display);
+                    result.push(expanded);
+                    return result;
+                }
+
+                function header_render(){
+                    var header = ["Image ID", "Image Repository", "Creation Time", "Size", "Tag"];
+                    return $.create("thead", {
+                        tags: "tr",
+                        contents: header.map((key) =>
+                            ({tag:"th", contents: key})
+                        )
+                    });
+                }
+
+                function fetchImageInfo() {
+                    fetch("https://api.tacc.ust.hk/images")
+                        .then(response => response.json())
+                        .then(response => {
+                            var row_data = response;
+                            tacc.render_table(
+                                response, 
+                                row_data, 
+                                header_render,
+                                row_render,
+                                ".main-table"
+                            );
+                        })
+                        .catch(error => {
+                            console.log(error);
+                        });
+                }
+                // Fetch and render the table on page load
+                fetchImageInfo();
+            });
+        </script>
+        <div class="container table main-table">
+        </div>
+    </section>
+
+    <footer class="section footer">
+        <div class="container">
+            <div class="columns content">
+                <div class="column items is-3">
+                    <div class="item item-title">TACC Workflow</div>
+                    <div class="item">Launch & Monitor AI Jobs</div>
+                    <div class="item">Access Cloud Storage</div>
+                    <div class="item">Manage Code & Scripts</div>
+                </div>
+                <div class="column items is-3">
+                    <div class="item item-title">TACC Space</div>
+                    <div class="item">Latest Public Images</div>
+                    <div class="item">Public Dataset</div>
+                    <div class="item">Discussion Groups</div>
+                </div>
+                <div class="column items is-3">
+                    <div class="item item-title">Research</div>
+                    <div class="item">AI-centric Networking</div>
+                    <div class="item">Machine Learning Systems</div>
+                    <div class="item">Cluster Resource Scheduling</div>
+                </div>
+                <div class="column items is-3">
+                    <div class="item item-title">Company</div>
+                    <div class="item">Our Team</div>
+                    <div class="item">Careers</div>
+                    <div class="item">HKUST iSING Lab</div>
+                </div>
+            </div>
+            <div class="columns is-align-items-center">
+                <div class="column is-narrow logo"><img src="assets/tacc-logo.png" /></div>
+                <div class="column copyright is-narrow">星畅 © 2020–2024</div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

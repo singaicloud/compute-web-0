@@ -24,6 +24,34 @@ class TACCTheme {
             ]
         });
         $(target)._.contents(render);
+        var enableDataTable = true;
+        if (enableDataTable) {
+            new DataTable(`${target} table`,{
+                layout: {
+                    topStart: {search: {
+                        text: "_INPUT_",
+                        placeholder: "Searching all entries",
+                    }},
+                    topEnd: {paging: {type: "simple_numbers"}},
+                    bottomStart: null,
+                    bottomEnd: {
+                        info: {}, 
+                        pageLength: {menu: [5, 10, 15, 20], text: '(_MENU_ entries per page)'},
+                    }
+                }
+            });
+            $.create("div", {
+                className: "control has-icons-left",
+                around: $("input[type='search']"), 
+                contents:{ 
+                    tag: "span", 
+                    className: "icon is-left", 
+                    contents: {tag: "i", className: "fas fa-search"}
+                },
+            });
+            $$(".dt-container > .is-multiline").forEach((e)=>e.classList.add("is-mobile"));
+            $$(".dt-container > .is-multiline").forEach((e)=>e.classList.add("is-gapless"));
+        }
         return render;
     }
 

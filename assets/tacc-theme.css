@@ -12,12 +12,18 @@
   src: url("openai-500.otf");
 }
 body, html {
-  font-family: "OpenAI", "IBM Plex Sans", sans-serif;
+  font-family: "OpenAI", "IBM Plex Sans", sans-serif !important;
   font-size: 16px;
   color: #080808;
   scroll-behavior: smooth;
   overflow-x: hidden;
   height: 100vh;
+  --border-color: #e0e0e0;
+  --background-grey: #f9f9f9;
+  --brand-color: #452D6C;
+}
+input, select, textarea {
+  font-family: "OpenAI", "IBM Plex Sans", sans-serif !important;
 }
 
 a {
@@ -26,10 +32,13 @@ a {
 a:hover {
   border-bottom: 1px solid black;
 }
-.text-colored {
+.text-colored, .text-brand{
   background-image: linear-gradient(90deg,#9b5cff 0,#ee5396);
   background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+.text-brand {
+  font-weight: bold;
 }
 .text-underlined {
   border-bottom: 1px solid black;
@@ -68,12 +77,15 @@ a:hover {
 .section {
   scroll-margin-top: 65px;
 }
+.section.content {
+  padding-top: 2rem;
+}
 
 /* Header and Footer */
 .menubar {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-color);
   position: -webkit-sticky;
   position: sticky;
   z-index: 99999;
@@ -94,6 +106,7 @@ a:hover {
 }
 .menubar .logo a {
   border: none;
+  display: flex;
 }
 .menubar .logo img {
   height: 36px;
@@ -124,7 +137,7 @@ a:hover {
   top: 100%;
   padding-top: 1rem;
   padding-bottom: 2rem;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--border-color);
   letter-spacing: .0025em;
   background-color: #f9f9f9!important;
 }
@@ -152,13 +165,18 @@ a:hover {
 
 /* Launchpad Area */
 .launchpad {
-  background-color: #f9f9f9;
+  background-color: var(--background-grey);
   padding-top: 2rem;
   padding-bottom: 2rem;
 }
 .launchpad .options {
   display: flex;
   gap: 1rem;
+}
+@media screen and (max-width: 768px){
+  .launchpad .options {
+    flex-direction: column;
+  }
 }
 .launchpad .option {
   display: flex;
@@ -168,7 +186,7 @@ a:hover {
   box-shadow: rgba(26, 26, 26, 0.07) 0px 1px 0px 0px;
   background-color: white;
   border-radius: 0.25rem;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color);
   cursor: pointer;
 }
 .launchpad .option .image {
@@ -202,14 +220,18 @@ a:hover {
 .table {
   text-align: center;
   cursor: default;
+  font-size: 0.9rem;
+  overflow-x: scroll;
 }
 .table td, .table th {
   vertical-align: middle!important;
+  white-space: nowrap;
+  max-width: 10rem;
 }
 .table thead {
   background-color: #f5f5f5;
-  border-top: 1px solid #e0e0e0;
-  border-bottom: 1px solid #e0e0e0;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
 }
 .table thead th {
   border: none!important;
@@ -218,7 +240,7 @@ a:hover {
   background-color: #f9f9f9;
 }
 .table tbody tr:last-child {
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-color);
 }
 .table .badge {
   display: flex;
@@ -228,13 +250,16 @@ a:hover {
   font-size: .85rem;
   border-radius: .5rem;
   background-color: rgba(0, 0, 0, .06);
-  padding: 2px .5rem;
+  padding: 0px .5rem;
+  font-size: .7rem;
 }
 .table .badge::before {
   content: ' • ';
   font-size: 1.1rem;
   margin-right: .5rem;
   flex: 1;
+  position: relative;
+  top: -1px;
 }
 .table .badge.running::before {
   color: #2ecc71;
@@ -247,6 +272,88 @@ a:hover {
 }
 .table .actions div {
   cursor: pointer;
+}
+
+.dt-container {
+  font-size: 0.86rem;
+  /* border-top: 1px solid var(--border-color);
+  padding-top: .6rem; */
+  overflow-y: hidden;
+}
+.dt-layout-start, .dt-layout-end {
+  margin-bottom: .6rem !important;
+}
+.dt-container .dt-search input[type="search"] {
+  font-size: .8rem;
+  height: 2rem;
+  width: 15rem!important;
+  border: 1px solid var(--background-grey);
+  box-shadow: none;
+  border-radius: .5rem;
+  background-color: var(--background-grey)
+}
+.dt-container .dt-search input[type="search"]:focus {
+  color: #080808;
+}
+.dt-container .dt-search input[type="search"]:hover {
+  border: 1px solid var(--border-color);
+}
+.dt-container .dt-search input[type="search"]::placeholder {
+  color: #080808;
+  opacity: 0.6;
+}
+
+.dt-container .dt-search .icon {
+  height: 2.1rem!important;
+  font-size: .8rem;
+  padding-left: 1rem;
+}
+.dt-container .pagination {
+  margin: 0;
+}
+.dt-container .pagination ul {
+  gap: .2rem;
+}
+.dt-container .pagination li {
+  margin-top: 0;
+  line-height: 0;
+}
+.dt-container .pagination a {
+  min-width: 1rem;
+  height: 1.6rem;
+  width: 1.6rem;
+  font-size: .6rem;
+  margin-left: 0;
+  margin-right: 0;
+}
+.dt-container .pagination a.previous, .dt-container .pagination a.next {
+  font-size: 1rem;
+}
+.dt-container .pagination-link.is-current {
+  background-color: #fff; 
+  border-color: var(--brand-color);
+  color: var(--brand-color);
+  font-weight: bold;
+}
+.dt-container .dt-length .select {
+  height: auto;
+}
+.dt-container > .columns:last-child {
+  margin-top: .6rem;
+  margin-bottom: .6rem !important;
+}
+.dt-container .dt-length select {
+  font-size: .8rem;
+  vertical-align: top!important;
+  height: auto;
+  border: none; 
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-right: 1rem;
+}
+.dt-container .dt-length .select::after {
+  border-width: 2px!important;
+  right: .25rem;
 }
 
 /* Form */

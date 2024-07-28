@@ -5,11 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>TACC | Scalable AI Infrastructure Designed for Evolving Machine Learning Research</title>
     
-    <!-- Bluma CSS and Bliss JS-->
+    <!-- CSS and JS Libraries-->
     <script src="assets/bliss.js"></script>
     <link rel="stylesheet" href="assets/bulma.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>jQuery.noConflict();</script>
+    <script src="https://cdn.datatables.net/v/bm/dt-2.1.2/datatables.min.js"></script>
+    <link href="assets/datatables.css" rel="stylesheet">
 
-    <!-- TACC Theme files -->
+    <!-- TACC Theme Files -->
     <link href="assets/tacc-theme.css" rel="stylesheet">
     <script src="assets/tacc-theme.js"></script>
     
@@ -78,16 +82,6 @@
                     var header = ["Namespace", "Container ID", "Container Name", "Creation Time", "CPU Limit", "Memory Limit", "GPU Limit", "Status", "Action"];
                     var result = []
                     var display = $.create("tr", {
-                        events: {
-                            click: function(){
-                                var expanded = this.nextElementSibling;
-                                if (expanded.style.visibility === "visible") {
-                                    expanded.style.visibility = "collapse";
-                                } else {
-                                    expanded.style.visibility = "visible";
-                                }
-                            }
-                        },
                         contents: header.map((key) =>
                             ({
                                 tag:"td", contents: (()=>{
@@ -128,30 +122,18 @@
                             })
                         )
                     });
-                    var expanded = $.create("tr", {
-                        contents: { 
-                            tag: "td",
-                            colspan: header.length,
-                            contents: {
-                                tag: "div",
-                                contents: JSON.stringify(data),
-                            },
-                        },
-                        style: {visibility: "collapse"},
-                    });
                     result.push(display);
-                    result.push(expanded);
                     return result;
                 }
 
                 function header_render(){
                     var header = ["Namespace", "Container ID", "Container Name", "Creation Time", "CPU", "Memory", "GPU", "Status", "Action"];
-                    return $.create("thead", {
-                        tags: "tr",
+                    return $.create("thead", { contents: {
+                        tag: "tr",
                         contents: header.map((key) =>
                             ({tag:"th", contents: key})
                         )
-                    });
+                    }});
                 }
 
                 function fetchPodInfo() {
@@ -212,9 +194,10 @@
             </div>
             <div class="columns is-align-items-center">
                 <div class="column is-narrow logo"><img src="assets/tacc-logo.png" /></div>
-                <div class="column copyright is-narrow">星畅 © 2020–2024</div>
+                <div class="column copyright is-narrow"><span class="text-brand">星畅</span> © 2020–2024</div>
             </div>
         </div>
     </footer>
+
 </body>
 </html>

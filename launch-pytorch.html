@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TACC | Scalable AI Infrastructure Designed for Evolving Machine Learning Research</title>
+    
+    <!-- Bluma CSS and Bliss JS-->
+    <script src="assets/bliss.js"></script>
+    <link rel="stylesheet" href="assets/bulma.min.css">
+
+    <!-- TACC Theme files -->
+    <link href="assets/tacc-theme.css" rel="stylesheet">
+    <script src="assets/tacc-theme.js"></script>
+    
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/99d5980073.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="menubar">
+        <div class="container">
+            <div class="columns is-multiline is-desktop is-align-items-center is-justify-content-center">
+                <div class="column is-narrow logo has-text-centered"><a href="/"><img src="./assets/tacc-logo.png"></a></div>
+                <div class="column has-text-centered">
+                    <div class="columns is-mobile is-align-items-center items is-multiline">
+                        <div class="column is-narrow item"><a href="/">Jobs</a></div>
+                        <div class="column is-narrow item"><a href="#">Storage</a></div>
+                        <div class="column is-narrow item"><a href="#">Images</a></div>
+                        <div class="column is-narrow item"><a href="#">Space</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <section class="section form"> 
+        <script>
+            document.addEventListener('DOMContentLoaded', function(){
+                // Function to fetch images from the API and populate the select box
+                function fetchImages() {
+                    fetch("https://api.tacc.ust.hk/images")
+                        .then(response => response.json())
+                        .then(images => {
+                            var select = document.querySelector('select[name="master_image"]');
+                            images.forEach(image => {
+                                var option = document.createElement('option');
+                                option.value = `${image.Repository}:${image.Tag}`;
+                                option.textContent = `${image.Repository}:${image.Tag}`;
+                                select.appendChild(option);
+                            });
+                            var selectWorker = document.querySelector('select[name="worker_image"]');
+                            images.forEach(image => {
+                                var option = document.createElement('option');
+                                option.value = `${image.Repository}:${image.Tag}`;
+                                option.textContent = `${image.Repository}:${image.Tag}`;
+                                selectWorker.appendChild(option);
+                            });
+                        })
+                        .catch(error => {
+                            console.error("Failed to fetch images:", error);
+                        });
+                }
+    
+                fetchImages(); // Call the function to populate the select box
+    
+                document.getElementById('add_env_var').addEventListener('click', function() {
+                    var envVarContainer = document.querySelector('.env-var-container');
+                    var newEnvVar = document.createElement('div');
+                    newEnvVar.classList.add('field', 'is-grouped', 'env-var');
+                    newEnvVar.innerHTML = `
+                        <div class="control">
+                            <input class="input" type="text" name="env_name" placeholder="Variable name">
+                        </div>
+                        <div class="control">
+                            <input class="input" type="text" name="env_value" placeholder="Variable value">
+                        </div>
+                        <div class="control">
+                            <button class="button is-danger remove_env_var"> × </button>
+                        </div>
+                    `;
+                    envVarContainer.append(newEnvVar);
+                    newEnvVar.querySelector('.remove_env_var').addEventListener('click', function() {
+                        envVarContainer.removeChild(newEnvVar);
+                    });
+                });
+    
+                document.getElementById('submit').addEventListener('click', function(){
+                    var data = {
+                        namespace: document.querySelector('input[name="namespace"]').value || 'default',
+                        job_name: document.querySelector('input[name="job_name"]').value || 'pytorch-dist-mnist-nccl',
+                        master_image: document.querySelector('select[name="master_image"]').value || 'pytorch-dist-mnist-test:1.0',
+                        worker_image: document.querySelector('select[name="worker_image"]').value || 'pytorch-dist-mnist-test:1.0',
+                        master_replicas: parseInt(document.querySelector('input[name="master_replicas"]').value) || 1,
+                        worker_replicas: parseInt(document.querySelector('input[name="worker_replicas"]').value) || 2,
+                        gpu_limit: parseInt(document.querySelector('input[name="gpu_limit"]').value) || 1,
+                        master_args: document.querySelector('input[name="master_args"]').value.split(',').map(arg => arg.trim()) || ["--backend", "nccl"],
+                        worker_args: document.querySelector('input[name="worker_args"]').value.split(',').map(arg => arg.trim()) || ["--backend", "nccl"],
+                        labels: JSON.parse(document.querySelector('input[name="labels"]').value) || {"app": "train-ddp"},
+                        env_vars: []  // Initialize the env_vars array
+                    };
+    
+                    // Collect environment variables
+                    document.querySelectorAll('.env-var').forEach(function(row) {
+                        data.env_vars.push({
+                            name: row.querySelector('input[name="env_name"]').value,
+                            value: row.querySelector('input[name="env_value"]').value
+                        });
+                    });
+                    fetch('https://api.tacc.ust.hk/create-pytorch-job', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(errData => {
+                                let errorMessage = 'Network response was not ok. Status: ' + response.status;
+                                if (response.statusText) {
+                                    errorMessage += ' (' + response.statusText + ')';
+                                }
+                                // Parse the detailed error message from response text
+                                let errorDetails = JSON.parse(errData.details);
+                                errorMessage += '\nmessage: ' + (errorDetails.message || 'No message provided');
+                                errorMessage += '\nreason: ' + (errorDetails.reason || 'No reason provided');
+                                throw new Error(errorMessage);
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(result => {
+                        console.log('Success:', result);
+                        alert('Container created successfully!');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Failed to create container: ' + error.message);
+                    });                                        
+                });
+            });
+        </script>
+        <div class="container main-form">
+            <div class="columns is-multiline">
+                <div class="column is-12">
+                    <div class="title">Create a Pytorch Job</div>
+                    <div class="subtitle">A job creates with your choice of container image and runtime specifications</div>
+                </div>
+            </div>
+            <div class="columns is-multiline">
+                <div class="column is-4 field">
+                    <label class="label">Namespace</label>
+                    <div class="control">
+                        <input class="input" type="text" name="namespace" value="default" placeholder="default">
+                    </div>
+                </div>
+                <div class="column is-8 field">
+                    <label class="label">Job Name</label>
+                    <div class="control">
+                        <input class="input" type="text" name="job_name" value="pytorch-dist-mnist-nccl" placeholder="job_name">
+                    </div>
+                </div>
+            </div>
+    
+            <div class="columns is-multiline">
+                <div class="column is-12 field">
+                    <label class="label">Master Image</label>
+                    <div class="control">
+                        <div class="select">
+                            <select name="master_image"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="column is-12 field">
+                    <label class="label">Worker Image</label>
+                    <div class="control">
+                        <div class="select">
+                            <select name="worker_image"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="columns is-multiline">
+                <div class="column is-4 field">
+                    <label class="label">Master Replicas</label>
+                    <div class="control">
+                        <input class="input" type="text" name="master_replicas" value="1" placeholder="1">
+                    </div>
+                </div>
+                <div class="column is-4 field">
+                    <label class="label">Worker Replicas</label>
+                    <div class="control">
+                        <input class="input" type="text" name="worker_replicas" value="2" placeholder="2">
+                    </div>
+                </div>
+                <div class="column is-4 field">
+                    <label class="label">GPU Limit</label>
+                    <div class="control">
+                        <input class="input" type="text" name="gpu_limit" value="1" placeholder="1">
+                    </div>
+                </div>
+            </div>
+    
+            <div class="columns is-multiline">
+                <div class="column is-12 field">
+                    <label class="label">Master Args</label>
+                    <div class="control">
+                        <input class="input" type="text" name="master_args" value="--backend, nccl" placeholder="--backend, nccl">
+                    </div>
+                </div>
+                <div class="column is-12 field">
+                    <label class="label">Worker Args</label>
+                    <div class="control">
+                        <input class="input" type="text" name="worker_args" value="--backend, nccl" placeholder="--backend, nccl">
+                    </div>
+                </div>
+            </div>
+    
+            <div class="columns is-multiline">
+                <div class="column is-12 field">
+                    <label class="label">Container Labels</label>
+                    <div class="control">
+                        <input class="input" type="text" name="labels" value='{"app": "train-ddp"}' placeholder="">
+                    </div>
+                </div>
+            </div>
+    
+            <div class="columns is-multiline">
+                <div class="column is-12 field env-var-container">
+                    <label class="label">Environment Variables</label>
+                    <div class="field is-grouped env-var">
+                        <div class="control">
+                            <input class="input" type="text" name="env_name" placeholder="Variable name">
+                        </div>
+                        <div class="control">
+                            <input class="input" type="text" name="env_value" placeholder="Variable value">
+                            <!-- <button class="button is-danger remove_env_var">Remove</button> -->
+                        </div>
+                        <div class="control">
+                            <button class="button is-primary" id="add_env_var">＋</button>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="column is-12 field">
+                    <label class="label">Entrypoint Command</label>
+                    <div class="control">
+                        <textarea class="textarea" name="entrypoint_command" placeholder="Command"></textarea>
+                    </div>
+                </div>
+    
+                <div class="column is-12 field submit">
+                    <div class="control">
+                        <button class="button primary" id="submit">Launch</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+
+    <footer class="section footer">
+        <div class="container">
+            <div class="columns content">
+                <div class="column items is-3">
+                    <div class="item item-title">TACC Workflow</div>
+                    <div class="item">Launch & Monitor AI Jobs</div>
+                    <div class="item">Access Cloud Storage</div>
+                    <div class="item">Manage Code & Scripts</div>
+                </div>
+                <div class="column items is-3">
+                    <div class="item item-title">TACC Space</div>
+                    <div class="item">Latest Public Images</div>
+                    <div class="item">Public Dataset</div>
+                    <div class="item">Discussion Groups</div>
+                </div>
+                <div class="column items is-3">
+                    <div class="item item-title">Research</div>
+                    <div class="item">AI-centric Networking</div>
+                    <div class="item">Machine Learning Systems</div>
+                    <div class="item">Cluster Resource Scheduling</div>
+                </div>
+                <div class="column items is-3">
+                    <div class="item item-title">Company</div>
+                    <div class="item">Our Team</div>
+                    <div class="item">Careers</div>
+                    <div class="item">HKUST iSING Lab</div>
+                </div>
+            </div>
+            <div class="columns is-align-items-center">
+                <div class="column is-narrow logo"><img src="assets/tacc-logo.png" /></div>
+                <div class="column copyright is-narrow"><span class="text-colored">星畅</span> © 2020–2024</div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

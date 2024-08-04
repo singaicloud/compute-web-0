@@ -71,12 +71,24 @@
     <section class="section content"> 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                function action(event, id){
+                function action(event, id, namespace, container_name){
                     return (e)=>{
                         e.stopPropagation(); // so that the table row will not expand
-                        alert(`Trigger ${event} ${id}`);
+                        if (event === 'log') {
+                            fetch(`https://api.tacc.ust.hk/get-pod-log?namespace=${namespace}&pod_name=${container_name}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    showModal(data.log);
+                                })
+                                .catch(error => {
+                                    console.error('Error fetching log:', error);
+                                });
+                        } else {
+                            alert(`Trigger ${event} ${id}`);
+                        }
                     }
-                };
+                }
+                
 
                 function row_render(data, table){
                     var header = ["Namespace", "Container ID", "Container Name", "Creation Time", "CPU Limit", "Memory Limit", "GPU Limit", "Status", "Action"];
@@ -97,7 +109,7 @@
                                                 contents: [
                                                     {   tag: "div",
                                                         events: {
-                                                            click: action("edit", data["Container ID"])
+                                                            click: action("edit", data["Container ID"], data["Namespace"], data["Container Name"])
                                                         },
                                                         contents: {
                                                             tag:"i", 
@@ -106,11 +118,20 @@
                                                     },
                                                     {   tag: "div", 
                                                         events: {
-                                                            click: action("stop", data["Container ID"])
+                                                            click: action("stop", data["Container ID"], data["Namespace"], data["Container Name"])
                                                         },
                                                         contents: {
                                                             tag:"i", 
                                                             className: "fa-solid fa-ban"
+                                                        }
+                                                    },
+                                                    {   tag: "div", 
+                                                        events: {
+                                                            click: action("log", data["Container ID"], data["Namespace"], data["Container Name"])
+                                                        },
+                                                        contents: {
+                                                            tag:"i", 
+                                                            className: "fa-solid fa-file-alt"
                                                         }
                                                     },
                                                 ]
@@ -125,6 +146,7 @@
                     result.push(display);
                     return result;
                 }
+                
 
                 function header_render(){
                     var header = ["Namespace", "Container ID", "Container Name", "Creation Time", "CPU", "Memory", "GPU", "Status", "Action"];
@@ -156,6 +178,24 @@
                             console.log(error);
                         });
                 }
+
+                // Function to show modal
+                function showModal(logContent) {
+                    const modal = document.getElementById('log-modal');
+                    const logContentElement = document.getElementById('log-content');
+                    logContentElement.textContent = logContent;
+                    modal.classList.add('is-active');
+                }
+
+                // Function to close modal
+                function closeModal() {
+                    const modal = document.getElementById('log-modal');
+                    modal.classList.remove('is-active');
+                }
+
+                // Add event listeners for modal close
+                document.querySelector('.modal-close').addEventListener('click', closeModal);
+                document.querySelector('.modal-background').addEventListener('click', closeModal);
                 // Fetch and render the table on page load
                 fetchPodInfo();
             });
@@ -198,6 +238,17 @@
             </div>
         </div>
     </footer>
+
+    <div id="log-modal" class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-content">
+            <div class="box">
+                <pre id="log-content"></pre>
+            </div>
+        </div>
+        <button class="modal-close is-large" aria-label="close"></button>
+    </div>
+    
 
 </body>
 </html>

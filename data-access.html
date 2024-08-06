@@ -40,35 +40,43 @@
 
         function fetchFiles(subpath = '') {
             currentPath = subpath;
-            $.getJSON(API_URL + '/files/' + subpath, function(data) {
+            $.getJSON(API_URL + '/files', { path: subpath }, function(data) {
                 var fileList = $('#file-list');
                 var fileContent = $('#file-content');
                 fileList.empty();
-                fileContent.empty(); // 清空文件内容区域
+                fileContent.empty();
 
                 if (subpath !== '') {
-                    var parentPath = subpath.split('/').slice(0, -2).join('/') + '/';
-                    fileList.append('<p class="folder-item" onclick="location.href=\'data-access.html\'">.. (Back)</p>');
+                    var parentPath = subpath.endsWith('/') ? subpath.slice(0, -1) : subpath;
+                    parentPath = parentPath.split('/').slice(0, -1).join('/');
+                    fileList.append('<p class="folder-item" onclick="fetchFiles(\'' + parentPath + '\')">.. (Back)</p>');
                 }
 
-                if (data.directories.length === 0 && data.files.length === 0) {
-                    fileList.append('<p>No files or directories found.</p>');
+                if (data.directories && data.files) {
+                    if (data.directories.length === 0 && data.files.length === 0) {
+                        fileList.append('<p>No files or directories found.</p>');
+                    } else {
+                        var list = $('<ul></ul>');
+                        data.directories.forEach(function(directory) {
+                            var listItem = $('<li class="folder-item"></li>').text(directory).click(function() {
+                                fetchFiles(subpath + directory + '/');
+                            });
+                            listItem.css('font-weight', 'bold');
+                            list.append(listItem);
+                        });
+                        data.files.forEach(function(file) {
+                            var listItem = $('<li class="file-item"></li>').text(file).click(function() {
+                                fetchFileContent(subpath + file);
+                            });
+                            list.append(listItem);
+                        });
+                        fileList.append(list);
+                    }
                 } else {
-                    var list = $('<ul></ul>');
-                    data.directories.forEach(function(directory) {
-                        var listItem = $('<li class="folder-item"></li>').text(directory).click(function() {
-                            fetchFiles(subpath + directory + '/');
-                        });
-                        listItem.css('font-weight', 'bold');
-                        list.append(listItem);
-                    });
-                    data.files.forEach(function(file) {
-                        var listItem = $('<li class="file-item"></li>').text(file).click(function() {
-                            fetchFileContent(subpath + file);
-                        });
-                        list.append(listItem);
-                    });
-                    fileList.append(list);
+                    var fileContent = $('#file-content');
+                    fileContent.empty();
+                    fileContent.append('<h2>Content of ' + subpath + ':</h2>');
+                    fileContent.append('<pre>' + $('<div>').text(data).html() + '</pre>');
                 }
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 $('#file-list').html('<p>Error fetching files: ' + textStatus + '</p>');
@@ -76,7 +84,7 @@
         }
 
         function fetchFileContent(filepath) {
-            $.get(API_URL + '/file/' + filepath, function(data) {
+            $.get(API_URL + '/files', { path: filepath }, function(data) {
                 var fileContent = $('#file-content');
                 fileContent.empty();
                 fileContent.append('<h2>Content of ' + filepath + ':</h2>');

@@ -99,6 +99,7 @@
                                 {tag:"td", contents: "↑"},
                                 {tag:"td", contents: `Go back from ${currentPath}`, events: {click: fetchPathTrigger(currentPath.split('/').slice(0,-2).join('/')+'/')} },
                                 {tag:"td", contents: ""},
+                                {tag:"td", contents: ""},
                                 {tag:"td", contents: 0}
                             ]
                         });
@@ -110,6 +111,7 @@
                                     {tag:"td", contents: ""},
                                     {tag:"td", contents: "No files or directories found"},
                                     {tag:"td", contents: ""},
+                                    {tag:"td", contents: ""},
                                     {tag:"td", contents: 1}
                                 ]
                             });
@@ -119,7 +121,8 @@
                             var display = $.create("tr", {
                                 contents: [
                                     {tag:"td", contents: {tag:"i", className: "fa-solid fa-folder"}},
-                                    {tag:"td", contents: item, events: {click: fetchPathTrigger(currentPath + item + '/')} },
+                                    {tag:"td", contents: item.name, events: {click: fetchPathTrigger(currentPath + item.name + '/')} },
+                                    {tag:"td", contents: item.last_modified },
                                     {tag:"td", contents: {tag: "div", 
                                                 className: "actions",
                                                 contents: [
@@ -140,13 +143,14 @@
                             var display = $.create("tr", {
                                 contents: [
                                     {tag:"td", contents: {tag:"i", className: "fa-regular fa-file"}},
-                                    {tag:"td", contents: item, events: {click: fetchFileTrigger(currentPath + item)} },
+                                    {tag:"td", contents: item.name, events: {click: fetchFileTrigger(currentPath + item.name)} },
+                                    {tag:"td", contents: item.last_modified },
                                     {tag:"td", contents: {tag: "div", 
                                                 className: "actions",
                                                 contents: [
                                                     {   tag: "div", 
                                                         events: {
-                                                            click: fetchFileTrigger(currentPath + item),
+                                                            click: fetchFileTrigger(currentPath + item.name),
                                                         },
                                                         className: "fa-solid fa-cloud-arrow-down"
                                                     },
@@ -168,7 +172,7 @@
                 }
 
                 function header_render(){
-                    var header = ["File Type", "File Name", "Action", "File Type ID"];
+                    var header = ["File Type", "File Name", "Last Updated At", "Action", "File Type ID"];
                     return $.create("thead", { contents:{
                         tag: "tr",
                         contents: header.map((key) =>
@@ -180,10 +184,11 @@
                 function fetchPath(path) {
                     currentPath = path;
                     var columnDefs = [
-                        { targets: 0, width: "0px", orderData: [3,1] },
+                        { targets: 0, width: "0px", orderData: [4, 1] },
+                        { targets: 2, width: "0px" },
                         { targets: 1, className: 'dt-left' },
-                        { targets: 2, orderable: 'false' },
-                        { targets: 3, visible: false },
+                        { targets: 3, orderable: 'false' },
+                        { targets: 4, visible: false },
                     ];
                     fetch("https://api.tacc.ust.hk/storage/list?path=" + path)
                         .then(response => response.json())

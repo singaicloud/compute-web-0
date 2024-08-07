@@ -96,7 +96,7 @@
                     var display = $.create("tr", {
                         contents: [
                             {tag:"td", contents: ".."},
-                            {tag:"td", contents: "Go back to parent directory", events: {click: fetchPathTrigger(currentPath + '../')} },
+                            {tag:"td", contents: `Go back from ${currentPath}`, events: {click: fetchPathTrigger(currentPath.split('/').slice(0,-2).join('/')+'/')} },
                             {tag:"td", contents: ""},
                             {tag:"td", contents: 0}
                         ]

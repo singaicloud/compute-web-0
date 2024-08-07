@@ -93,15 +93,17 @@
 
                 function row_render(data){
                     var result = [];
-                    var display = $.create("tr", {
-                        contents: [
-                            {tag:"td", contents: ".."},
-                            {tag:"td", contents: `Go back from ${currentPath}`, events: {click: fetchPathTrigger(currentPath.split('/').slice(0,-2).join('/')+'/')} },
-                            {tag:"td", contents: ""},
-                            {tag:"td", contents: 0}
-                        ]
-                    });
-                    result.push(display);
+                    if (currentPath != "./") {
+                        var display = $.create("tr", {
+                            contents: [
+                                {tag:"td", contents: "↑"},
+                                {tag:"td", contents: `Go back from ${currentPath}`, events: {click: fetchPathTrigger(currentPath.split('/').slice(0,-2).join('/')+'/')} },
+                                {tag:"td", contents: ""},
+                                {tag:"td", contents: 0}
+                            ]
+                        });
+                        result.push(display);
+                    }
                     if (data.directories.length === 0 && data.files.length === 0) {
                         var display = $.create("tr", {
                                 contents: [
@@ -137,7 +139,7 @@
                         data.files.forEach(function(item) {
                             var display = $.create("tr", {
                                 contents: [
-                                    {tag:"td", contents: {tag:"i", className: "fa-solid fa-file"}},
+                                    {tag:"td", contents: {tag:"i", className: "fa-regular fa-file"}},
                                     {tag:"td", contents: item, events: {click: fetchFileTrigger(currentPath + item)} },
                                     {tag:"td", contents: {tag: "div", 
                                                 className: "actions",
@@ -166,7 +168,7 @@
                 }
 
                 function header_render(){
-                    var header = ["File Type", "File Name", "Action","File Type ID"];
+                    var header = ["File Type", "File Name", "Action", "File Type ID"];
                     return $.create("thead", { contents:{
                         tag: "tr",
                         contents: header.map((key) =>

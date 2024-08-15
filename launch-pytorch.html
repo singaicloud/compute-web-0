@@ -51,13 +51,6 @@
                                 option.textContent = `${image.Repository}:${image.Tag}`;
                                 select.appendChild(option);
                             });
-                            var selectWorker = document.querySelector('select[name="worker_image"]');
-                            images.forEach(image => {
-                                var option = document.createElement('option');
-                                option.value = `${image.Repository}:${image.Tag}`;
-                                option.textContent = `${image.Repository}:${image.Tag}`;
-                                selectWorker.appendChild(option);
-                            });
                         })
                         .catch(error => {
                             console.error("Failed to fetch images:", error);
@@ -92,14 +85,13 @@
                         namespace: document.querySelector('input[name="namespace"]').value || 'default',
                         job_name: document.querySelector('input[name="job_name"]').value || 'pytorch-dist-mnist-nccl',
                         master_image: document.querySelector('select[name="master_image"]').value || 'pytorch-dist-mnist-test:1.0',
-                        worker_image: document.querySelector('select[name="worker_image"]').value || 'pytorch-dist-mnist-test:1.0',
                         master_replicas: parseInt(document.querySelector('input[name="master_replicas"]').value) || 1,
                         worker_replicas: parseInt(document.querySelector('input[name="worker_replicas"]').value) || 2,
                         gpu_limit: parseInt(document.querySelector('input[name="gpu_limit"]').value) || 1,
-                        master_args: document.querySelector('input[name="master_args"]').value.split(',').map(arg => arg.trim()) || ["--backend", "nccl"],
-                        worker_args: document.querySelector('input[name="worker_args"]').value.split(',').map(arg => arg.trim()) || ["--backend", "nccl"],
-                        labels: JSON.parse(document.querySelector('input[name="labels"]').value) || {"app": "train-ddp"},
-                        env_vars: []  // Initialize the env_vars array
+                        command: document.querySelector('input[name="command"]').value.split(',').map(arg => arg.trim()) || [""],
+                        <!-- labels: JSON.parse(document.querySelector('input[name="labels"]').value) || {"app": "train-ddp"}, -->
+                        env_vars: [],  // Initialize the env_vars array
+                        use_ssh: document.querySelector('input[name="use_ssh"]').checked // Get the value of the SSH checkbox
                     };
     
                     // Collect environment variables
@@ -174,14 +166,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="column is-12 field">
-                    <label class="label">Worker Image</label>
-                    <div class="control">
-                        <div class="select">
-                            <select name="worker_image"></select>
-                        </div>
-                    </div>
-                </div>
             </div>
     
             <div class="columns is-multiline">
@@ -198,7 +182,7 @@
                     </div>
                 </div>
                 <div class="column is-4 field">
-                    <label class="label">GPU Limit</label>
+                    <label class="label">GPU Limition for Worker</label>
                     <div class="control">
                         <input class="input" type="text" name="gpu_limit" value="1" placeholder="1">
                     </div>
@@ -207,27 +191,21 @@
     
             <div class="columns is-multiline">
                 <div class="column is-12 field">
-                    <label class="label">Master Args</label>
+                    <label class="label">Entrypoint Command</label>
                     <div class="control">
-                        <input class="input" type="text" name="master_args" value="--backend, nccl" placeholder="--backend, nccl">
-                    </div>
-                </div>
-                <div class="column is-12 field">
-                    <label class="label">Worker Args</label>
-                    <div class="control">
-                        <input class="input" type="text" name="worker_args" value="--backend, nccl" placeholder="--backend, nccl">
+                        <input class="input" type="text" name="command" value="python /opt/mnist/src/mnist.py --backend nccl --run-training" placeholder="python /opt/mnist/src/mnist.py --backend nccl --run-training">
                     </div>
                 </div>
             </div>
     
-            <div class="columns is-multiline">
+            <!-- <div class="columns is-multiline">
                 <div class="column is-12 field">
                     <label class="label">Container Labels</label>
                     <div class="control">
                         <input class="input" type="text" name="labels" value='{"app": "train-ddp"}' placeholder="">
                     </div>
                 </div>
-            </div>
+            </div> -->
     
             <div class="columns is-multiline">
                 <div class="column is-12 field env-var-container">
@@ -245,13 +223,13 @@
                         </div>
                     </div>
                 </div>
-    
+
                 <div class="column is-12 field">
-                    <label class="label">Entrypoint Command</label>
+                    <label class="label">Use SSH</label>
                     <div class="control">
-                        <textarea class="textarea" name="entrypoint_command" placeholder="Command"></textarea>
+                        <input type="checkbox" name="use_ssh" style="width: 20px; height: 20px;">
                     </div>
-                </div>
+                </div>                
     
                 <div class="column is-12 field submit">
                     <div class="control">

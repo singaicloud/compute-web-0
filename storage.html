@@ -13,7 +13,7 @@
     <script src="https://cdn.datatables.net/v/bm/dt-2.1.2/datatables.min.js"></script>
     <link href="assets/datatables.css" rel="stylesheet">
 
-    <!-- TACC Theme Files -->
+    <!-- TACC Theme files -->
     <link href="assets/tacc-theme.css" rel="stylesheet">
     <script src="assets/tacc-theme.js"></script>
     
@@ -53,7 +53,7 @@
                 <div class="option">
                     <div class="image"><i class="fa-solid fa-list-check"></i></div>
                     <div class="text">
-                        <div class="line1">Launch</div>
+                        <a href="/launch.html"><div class="line1">Quick Launch</div></a>
                         <div class="line2">Choose your runtime specifications</div>
                     </div>
                 </div>
@@ -71,86 +71,109 @@
     <section class="section content"> 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                function action(event, id, namespace, container_name){
+                var currentPath = "./";
+
+                function action(event, id){
                     return (e)=>{
                         e.stopPropagation(); // so that the table row will not expand
-                        if (event === 'log') {
-                            fetch(`https://api.tacc.ust.hk/get-pod-log?namespace=${namespace}&pod_name=${container_name}`)
-                                .then(response => response.json())
-                                .then(data => {
-                                    showModal(data.log);
-                                })
-                                .catch(error => {
-                                    console.error('Error fetching log:', error);
-                                });
-                        } else {
-                            alert(`Trigger ${event} ${id}`);
-                        }
+                        alert(`Trigger ${event} ${id}`);
+                    }
+                };
+
+                function fetchPathTrigger(path) {
+                    return function() {
+                        fetchPath(path);
                     }
                 }
-                
+                function fetchFileTrigger(path) {
+                    return function() {
+                        window.open("https://api.tacc.ust.hk/storage/download?path="+path, '_blank');
+                    }
+                }
 
                 function row_render(data){
-                    var header = ["Namespace", "Container ID", "Container Name", "Creation Time", "CPU Limit", "Memory Limit", "GPU Limit", "Status", "Action"];
-                    var result = []
-                    var display = $.create("tr", {
-                        contents: header.map((key) =>
-                            ({
-                                tag:"td", contents: (()=>{
-                                    switch (key) {
-                                        case "Status":
-                                            return $.create("span", {
-                                                className: "badge " + data[key].toLowerCase(),
-                                                contents: data[key]
-                                            });
-                                        case "Action":
-                                            return $.create("div", {
+                    var result = [];
+                    if (currentPath != "./") {
+                        var display = $.create("tr", {
+                            contents: [
+                                {tag:"td", contents: "↑"},
+                                {tag:"td", contents: `Go back from ${currentPath}`, events: {click: fetchPathTrigger(currentPath.split('/').slice(0,-2).join('/')+'/')} },
+                                {tag:"td", contents: ""},
+                                {tag:"td", contents: ""},
+                                {tag:"td", contents: 0}
+                            ]
+                        });
+                        result.push(display);
+                    }
+                    if (data.directories.length === 0 && data.files.length === 0) {
+                        var display = $.create("tr", {
+                                contents: [
+                                    {tag:"td", contents: ""},
+                                    {tag:"td", contents: "No files or directories found"},
+                                    {tag:"td", contents: ""},
+                                    {tag:"td", contents: ""},
+                                    {tag:"td", contents: 1}
+                                ]
+                            });
+                            result.push(display);
+                    } else {
+                        data.directories.forEach(function(item) {
+                            var display = $.create("tr", {
+                                contents: [
+                                    {tag:"td", contents: {tag:"i", className: "fa-solid fa-folder"}},
+                                    {tag:"td", contents: item.name, events: {click: fetchPathTrigger(currentPath + item.name + '/')} },
+                                    {tag:"td", contents: item.last_modified },
+                                    {tag:"td", contents: {tag: "div", 
                                                 className: "actions",
                                                 contents: [
-                                                    {   tag: "div",
-                                                        events: {
-                                                            click: action("edit", data["Container ID"], data["Namespace"], data["Container Name"])
-                                                        },
-                                                        contents: {
-                                                            tag:"i", 
-                                                            className: "fa-regular fa-pen-to-square"
-                                                        }
+                                                    {   tag: "div", 
+                                                        className: "fa-solid fa-cloud-arrow-down"
                                                     },
                                                     {   tag: "div", 
-                                                        events: {
-                                                            click: action("stop", data["Container ID"], data["Namespace"], data["Container Name"])
-                                                        },
-                                                        contents: {
-                                                            tag:"i", 
-                                                            className: "fa-solid fa-ban"
-                                                        }
-                                                    },
-                                                    {   tag: "div", 
-                                                        events: {
-                                                            click: action("log", data["Container ID"], data["Namespace"], data["Container Name"])
-                                                        },
-                                                        contents: {
-                                                            tag:"i", 
-                                                            className: "fa-solid fa-file-alt"
-                                                        }
+                                                        className: "fa-solid fa-trash"
                                                     },
                                                 ]
-                                            });
-                                        default:
-                                            return data[key];
-                                    }
-                                })(),
-                            })
-                        )
-                    });
-                    result.push(display);
+                                    }},
+                                    {tag:"td", contents: 1}
+                                ]
+                            });
+                            result.push(display);
+                        });
+                        data.files.forEach(function(item) {
+                            var display = $.create("tr", {
+                                contents: [
+                                    {tag:"td", contents: {tag:"i", className: "fa-regular fa-file"}},
+                                    {tag:"td", contents: item.name, events: {click: fetchFileTrigger(currentPath + item.name)} },
+                                    {tag:"td", contents: item.last_modified },
+                                    {tag:"td", contents: {tag: "div", 
+                                                className: "actions",
+                                                contents: [
+                                                    {   tag: "div", 
+                                                        events: {
+                                                            click: fetchFileTrigger(currentPath + item.name),
+                                                        },
+                                                        className: "fa-solid fa-cloud-arrow-down"
+                                                    },
+                                                    {   tag: "div",
+                                                        className: "fa-solid fa-trash"
+                                                    },
+                                                ]
+                                    }},
+                                    {tag:"td", contents: 2}
+                                ]
+                            });
+                            result.push(display);
+                            var event = function() {
+                                fetchFileContent(subpath + file);
+                            };
+                        });
+                    }
                     return result;
                 }
-                
 
                 function header_render(){
-                    var header = ["Namespace", "Container ID", "Container Name", "Creation Time", "CPU", "Memory", "GPU", "Status", "Action"];
-                    return $.create("thead", { contents: {
+                    var header = ["File Type", "File Name", "Last Updated At", "Action", "File Type ID"];
+                    return $.create("thead", { contents:{
                         tag: "tr",
                         contents: header.map((key) =>
                             ({tag:"th", contents: key})
@@ -158,45 +181,34 @@
                     }});
                 }
 
-                function fetchPodInfo() {
-                    fetch("https://api.tacc.ust.hk/pods")
+                function fetchPath(path) {
+                    currentPath = path;
+                    var columnDefs = [
+                        { targets: 0, width: "0px", orderData: [4, 1] },
+                        { targets: 2, width: "0px" },
+                        { targets: 1, className: 'dt-left' },
+                        { targets: 3, orderable: 'false' },
+                        { targets: 4, visible: false },
+                    ];
+                    fetch("https://api.tacc.ust.hk/storage/list?path=" + path)
                         .then(response => response.json())
                         .then(response => {
-                            var row_data = []
-                            Object.keys(response).forEach(function(namespace) {
-                                row_data.push(...response[namespace])
-                            });
-                            tacc.render_table(
-                                row_data, 
-                                header_render,
-                                row_render,
-                                ".main-table"
-                            );
+                            if (response.code == 200) {
+                                tacc.render_table(
+                                    response.data,
+                                    header_render,
+                                    row_render,
+                                    ".main-table",
+                                    columnDefs
+                                );
+                            }
                         })
                         .catch(error => {
                             console.log(error);
                         });
                 }
-
-                // Function to show modal
-                function showModal(logContent) {
-                    const modal = document.getElementById('log-modal');
-                    const logContentElement = document.getElementById('log-content');
-                    logContentElement.textContent = logContent;
-                    modal.classList.add('is-active');
-                }
-
-                // Function to close modal
-                function closeModal() {
-                    const modal = document.getElementById('log-modal');
-                    modal.classList.remove('is-active');
-                }
-
-                // Add event listeners for modal close
-                document.querySelector('.modal-close').addEventListener('click', closeModal);
-                document.querySelector('.modal-background').addEventListener('click', closeModal);
                 // Fetch and render the table on page load
-                fetchPodInfo();
+                fetchPath(currentPath);
             });
         </script>
         <div class="container table main-table">
@@ -233,21 +245,10 @@
             </div>
             <div class="columns is-align-items-center">
                 <div class="column is-narrow logo"><img src="assets/tacc-logo.png" /></div>
-                <div class="column copyright is-narrow"><span class="text-brand">星畅</span> © 2020–2024</div>
+                <div class="column copyright is-narrow"><span class="text-colored">星畅</span> © 2020–2024</div>
             </div>
         </div>
     </footer>
-
-    <div id="log-modal" class="modal">
-        <div class="modal-background"></div>
-        <div class="modal-content">
-            <div class="box">
-                <pre id="log-content"></pre>
-            </div>
-        </div>
-        <button class="modal-close is-large" aria-label="close"></button>
-    </div>
-    
 
 </body>
 </html>

@@ -2,12 +2,16 @@ class TACCTheme {
     constructor() {
         this.name = 'TACC Theme';
         this.version = '0.1';
+        this.DataTable = null;
     }
 
-    render_table(table_raw, rows_raw, header_render, row_render, target) {
+    render_table(data, header_render, row_render, target, columnDefs=[]) {
         var rows = [];
-        rows_raw.forEach((row)=>{
-            var rendered_row = row_render(row, table_raw);
+        if (!Array.isArray(data)) { 
+            data = [data];
+        }
+        data.forEach((row)=>{
+            var rendered_row = row_render(row);
             // check if it is a row or a row array
             if (Array.isArray(rendered_row)) {
                 rendered_row.forEach((r)=>{
@@ -19,14 +23,15 @@ class TACCTheme {
         }); 
         let render = $.create('table', {
             contents: [
-                header_render(table_raw),
+                header_render(data),
                 {tag: 'tbody', contents: rows}
             ]
         });
         $(target)._.contents(render);
         var enableDataTable = true;
         if (enableDataTable) {
-            new DataTable(`${target} table`,{
+            if (this.DataTable) { this.DataTable.destroy(true); }
+            this.DataTable = new DataTable(`${target} table`,{
                 layout: {
                     topStart: {search: {
                         text: "_INPUT_",
@@ -38,7 +43,8 @@ class TACCTheme {
                         info: {}, 
                         pageLength: {menu: [5, 10, 15, 20], text: '(_MENU_ entries per page)'},
                     }
-                }
+                },
+                columnDefs: columnDefs,
             });
             $.create("div", {
                 className: "control has-icons-left",

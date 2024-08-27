@@ -272,6 +272,7 @@ a:hover {
 }
 .table .actions div {
   cursor: pointer;
+  line-height: 1.5rem;
 }
 
 .dt-container {

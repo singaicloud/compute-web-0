@@ -118,7 +118,7 @@
                                 alert("SSH port is not available.");
                             }                        
                         } else if (event === 'delete') {
-                            if (confirm(`Are you sure you want to delete the container ${container_name}?`)) {
+                            if (confirm(`Are you sure you want to delete the job ${data["Job Name"]}?`)) {
                                 document.getElementById("overlay").style.display = "block";
                                 fetch('https://api.tacc.ust.hk/delete-container', {
                                     method: 'POST',
@@ -127,7 +127,9 @@
                                     },
                                     body: JSON.stringify({
                                         namespace: namespace,
-                                        container_name: container_name
+                                        container_name: container_name,
+                                        job_type: data["Job Type"],
+                                        job_name: data["Job Name"]
                                     })
                                 })
                                 .then(response => {
@@ -147,6 +149,79 @@
                             } else {
                                 console.log("Deletion cancelled.");
                             }
+                        } else if (event === 'edit') {
+                            if (data["Status"] === 'Running') {
+                                showPortMappingModal(data["Pod IP"]);
+                        
+                                const saveButton = document.getElementById('save-port-mapping');
+                                const cancelButton = document.getElementById('cancel-port-mapping');
+                                const deleteButton = document.getElementById('delete-port-mapping');
+                            
+                                saveButton.onclick = function() {
+                                    const containerPort = document.getElementById('container-port-input').value;
+                                    if (containerPort) {
+                                        fetch(`http://gw.tacc.ust.hk:18888/add_proxy?ip=${data["Pod IP"]}&name=${container_name}&port=${containerPort}`)
+                                            .then(response => {
+                                                const contentType = response.headers.get("content-type");
+                                                if (contentType && contentType.includes("application/json")) {
+                                                    return response.json();
+                                                } else {
+                                                    return response.text();
+                                                }
+                                            })
+                                            .then(data => {
+                                                if (typeof data === 'string') {
+                                                    alert(data);
+                                                } else if (data.port) {
+                                                    alert(`Successfully mapped container port ${containerPort} to external port ${data.port}`);
+                                                } else {
+                                                    alert('Failed to map port.');
+                                                }
+                                                hideModal();
+                                            })
+                                            .catch(error => {
+                                                console.error('Error mapping port:', error);
+                                            });
+                                    }
+                                };
+                        
+                                cancelButton.onclick = function() {
+                                    hideModal();
+                                };
+                        
+                                deleteButton.onclick = function() {
+                                    const containerPort = document.getElementById('container-port-input').value;
+                                    if (containerPort) {
+                                        fetch(`http://gw.tacc.ust.hk:18888/remove_proxy?ip=${data["Pod IP"]}&name=${container_name}&port=${containerPort}`, {
+                                            method: 'GET'
+                                        })
+                                            .then(response => {
+                                                const contentType = response.headers.get("content-type");
+                                                if (contentType && contentType.includes("application/json")) {
+                                                    return response.json();
+                                                } else {
+                                                    return response.text();
+                                                }
+                                            })
+                                            .then(data => {
+                                                if (typeof data === 'string') {
+                                                    alert(data);
+                                                } else if (data.message) {
+                                                    alert(`Successfully removed port mapping: ${containerPort}`);
+                                                } else {
+                                                    alert('Failed to remove port mapping.');
+                                                }
+                                                hideModal();
+                                            })
+                                            .catch(error => {
+                                                console.error('Error removing port mapping:', error);
+                                            });
+                                    }
+                                };
+                            } else {
+                                alert('Cannot edit. The container is not running.');
+                            }
+                            
                         } else {
                             alert(`Trigger ${event} ${id}`);
                         }
@@ -264,6 +339,45 @@
                     modal.classList.remove('is-active');
                 }
 
+                function showPortMappingModal(containerIp) {
+                    const modal = document.getElementById('port-modal');
+                    const existingMappings = document.getElementById('existing-port-mappings');
+                
+                    // Fetch existing port mappings
+                    fetch(`http://gw.tacc.ust.hk:18888/get_port?ip=${containerIp}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.ports && data.ports.length > 0) {
+                                existingMappings.innerHTML = '';
+                
+                                data.ports.forEach(mapping => {
+                                    const mappingElement = document.createElement('p');
+                                    mappingElement.textContent = `Container port ${mapping.container_port} -> Allocated port ${mapping.allocated_port}`;
+                                    existingMappings.appendChild(mappingElement);
+                                });
+                            } else {
+                                existingMappings.textContent = 'No existing port mappings found.';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching port mappings:', error);
+                            existingMappings.textContent = 'Error fetching port mappings.';
+                        });
+                
+                    modal.classList.add('is-active');
+                
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            hideModal();
+                        }
+                    });
+                }
+                
+                function hideModal() {
+                    const modal = document.getElementById('port-modal');
+                    modal.classList.remove('is-active');
+                }
+
                 // Add event listeners for modal close
                 document.querySelector('.modal-close').addEventListener('click', closeModal);
                 document.querySelector('.modal-background').addEventListener('click', closeModal);
@@ -325,6 +439,20 @@
             Please wait...
         </div>
     </div>
+
+    <div id="port-modal" class="modal">
+        <div class="modal-content">
+            <h2>Edit Port Mapping</h2>
+            <p id="existing-port-mappings"></p>
+            <label for="container-port-input">Container Port:</label>
+            <input type="text" id="container-port-input" />
+            <button id="save-port-mapping">Save</button>
+            <button id="delete-port-mapping">Delete</button>
+            <button id="cancel-port-mapping">Cancel</button>
+        </div>
+    </div>
+    
+    
     
     
 

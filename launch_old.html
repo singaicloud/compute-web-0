@@ -44,7 +44,7 @@
                     fetch("https://api.tacc.ust.hk/images")
                         .then(response => response.json())
                         .then(images => {
-                            var select = document.querySelector('select[name="master_image"]');
+                            var select = document.querySelector('select[name="image"]');
                             images.forEach(image => {
                                 var option = document.createElement('option');
                                 option.value = `${image.Repository}:${image.Tag}`;
@@ -60,7 +60,7 @@
                 fetchImages(); // Call the function to populate the select box
     
                 document.getElementById('add_env_var').addEventListener('click', function() {
-                    var envVarContainer = document.querySelector('.env-var-container');
+                    var envVarContainer = $('.env-var-container');
                     var newEnvVar = document.createElement('div');
                     newEnvVar.classList.add('field', 'is-grouped', 'env-var');
                     newEnvVar.innerHTML = `
@@ -74,7 +74,7 @@
                             <button class="button is-danger remove_env_var"> × </button>
                         </div>
                     `;
-                    envVarContainer.append(newEnvVar);
+                    envVarContainer.appendChild(newEnvVar);
                     newEnvVar.querySelector('.remove_env_var').addEventListener('click', function() {
                         envVarContainer.removeChild(newEnvVar);
                     });
@@ -83,28 +83,26 @@
                 document.getElementById('submit').addEventListener('click', function(){
                     var data = {
                         namespace: document.querySelector('input[name="namespace"]').value || 'default',
-                        job_name: document.querySelector('input[name="job_name"]').value || 'pytorch-dist-mnist-nccl',
-                        master_image: document.querySelector('select[name="master_image"]').value || 'pytorch-dist-mnist-test:1.0',
-                        <!-- master_replicas: parseInt(document.querySelector('input[name="master_replicas"]').value) || 1, -->
-                        worker_replicas: parseInt(document.querySelector('input[name="worker_replicas"]').value) || 2,
-                        cpu_limit: parseInt(document.querySelector('input[name="cpu_limit"]').value) || 1,
-                        memory_limit: document.querySelector('input[name="memory_limit"]').value || '256Mi',
-                        gpu_limit: parseInt(document.querySelector('input[name="gpu_limit"]').value) || 1,
-                        <!-- command: document.querySelector('input[name="command"]').value.split(',').map(arg => arg.trim()) || [""], -->
-                        commandArray: document.querySelector('input[name="command"]').value.trim().split(/\s+/).map(arg => arg.trim()),
-                        <!-- labels: JSON.parse(document.querySelector('input[name="labels"]').value) || {"app": "train-ddp"}, -->
-                        env_vars: [],  // Initialize the env_vars array
-                        use_ssh: document.querySelector('input[name="use_ssh"]').checked // Get the value of the SSH checkbox
+                        container_name: document.querySelector('input[name="container_name"]').value || 'default-container',
+                        image: document.querySelector('select[name="image"]').value,
+                        replicas: parseInt(document.querySelector('input[name="replicas_number"]').value) || 1,
+                        cpu_limit: document.querySelector('input[name="cpu_limit"]').value || '500m',
+                        memory_limit: document.querySelector('input[name="memory_limit"]').value || '512Mi',
+                        restart_policy: document.querySelector('select[name="restart_policy"]').value,
+                        env_vars: [],
+                        entrypoint_command: document.querySelector('textarea[name="entrypoint_command"]').value,
+                        labels: document.querySelector('input[name="labels"]').value
                     };
     
                     // Collect environment variables
-                    document.querySelectorAll('.env-var').forEach(function(row) {
+                    $$('.env-var').forEach(function(row) {
                         data.env_vars.push({
                             name: row.querySelector('input[name="env_name"]').value,
                             value: row.querySelector('input[name="env_value"]').value
                         });
                     });
-                    fetch('https://api.tacc.ust.hk/create-job', {
+                    
+                    fetch('https://api.tacc.ust.hk/create-container', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -113,17 +111,7 @@
                     })
                     .then(response => {
                         if (!response.ok) {
-                            return response.json().then(errData => {
-                                let errorMessage = 'Network response was not ok. Status: ' + response.status;
-                                if (response.statusText) {
-                                    errorMessage += ' (' + response.statusText + ')';
-                                }
-                                // Parse the detailed error message from response text
-                                let errorDetails = JSON.parse(errData.details);
-                                errorMessage += '\nmessage: ' + (errorDetails.message || 'No message provided');
-                                errorMessage += '\nreason: ' + (errorDetails.reason || 'No reason provided');
-                                throw new Error(errorMessage);
-                            });
+                            throw new Error('Network response was not ok ' + response.statusText);
                         }
                         return response.json();
                     })
@@ -134,89 +122,86 @@
                     .catch(error => {
                         console.error('Error:', error);
                         alert('Failed to create container: ' + error.message);
-                    });                                        
+                    });
                 });
             });
         </script>
         <div class="container main-form">
             <div class="columns is-multiline">
                 <div class="column is-12">
-                    <div class="title">Create a Pytorch Job</div>
+                    <div class="title">Create a Job</div>
                     <div class="subtitle">A job creates with your choice of container image and runtime specifications</div>
                 </div>
             </div>
             <div class="columns is-multiline">
+
                 <div class="column is-4 field">
                     <label class="label">Namespace</label>
                     <div class="control">
-                        <input class="input" type="text" name="namespace" value="default" placeholder="default">
+                        <input class="input" type="text" name="namespace" value="demo-project" placeholder="default">
                     </div>
                 </div>
                 <div class="column is-8 field">
-                    <label class="label">Job Name</label>
+                    <label class="label">Container Name</label>
                     <div class="control">
-                        <input class="input" type="text" name="job_name" value="pytorch-dist-mnist-nccl" placeholder="job_name">
+                        <input class="input" type="text" name="container_name" value="test5" placeholder="my_container">
+                    </div>
+                </div>
+
+                <div class="column is-4 field">
+                    <label class="label">Replicas Number</label>
+                    <div class="control">
+                        <input class="input" type="text" name="replicas_number" value="1" placeholder="1">
+                    </div>
+                </div>
+
+                <div class="column is-8 field">
+                    <label class="label">Container Labels</label>
+                    <div class="control">
+                        <input class="input" type="text" name="labels" value="test5" placeholder="">
                     </div>
                 </div>
             </div>
-    
+
             <div class="columns is-multiline">
                 <div class="column is-12 field">
-                    <label class="label">Image</label>
+                    <label class="label">Images</label>
                     <div class="control">
                         <div class="select">
-                            <select name="master_image"></select>
+                            <select name="image"></select>
                         </div>
                     </div>
                 </div>
             </div>
-    
+
             <div class="columns is-multiline">
-                <div class="column is-3 field">
-                    <label class="label">CPU</label>
+                <div class="column is-4 field">
+                    <label class="label">CPU Limit</label>
                     <div class="control">
-                        <input class="input" type="text" name="cpu_limit" value="1" placeholder="1">
+                        <input class="input" type="text" name="cpu_limit" value="10" placeholder="500m">
                     </div>
                 </div>
-                <div class="column is-3 field">
-                    <label class="label">Memory</label>
+            
+                <div class="column is-4 field">
+                    <label class="label">Memory Limit</label>
                     <div class="control">
-                        <input class="input" type="text" name="memory_limit" value="256Mi" placeholder="256Mi">
+                        <input class="input" type="text" name="memory_limit" value="512Mi" placeholder="512Mi">
                     </div>
                 </div>
-                <div class="column is-3 field">
-                    <label class="label">Worker Numbers</label>
+        
+                <div class="column is-4 field">
+                    <label class="label">Restart Policy</label>
                     <div class="control">
-                        <input class="input" type="text" name="worker_replicas" value="2" placeholder="2">
+                        <div class="select">
+                            <select name="restart_policy">
+                                <option value="Always">Always</option>
+                                <option value="OnFailure">OnFailure</option>
+                                <option value="Never">Never</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-                <div class="column is-3 field">
-                    <label class="label">GPU Number pre Worker</label>
-                    <div class="control">
-                        <input class="input" type="text" name="gpu_limit" value="1" placeholder="1">
-                    </div>
-                </div>
-            </div>
-    
-            <div class="columns is-multiline">
-                <div class="column is-12 field">
-                    <label class="label">Entrypoint Command</label>
-                    <div class="control">
-                        <input class="input" type="text" name="command" value="python /opt/mnist/src/mnist.py --backend nccl --run-training" placeholder="python /opt/mnist/src/mnist.py --backend nccl --run-training">
-                    </div>
-                </div>
-            </div>
-    
-            <!-- <div class="columns is-multiline">
-                <div class="column is-12 field">
-                    <label class="label">Container Labels</label>
-                    <div class="control">
-                        <input class="input" type="text" name="labels" value='{"app": "train-ddp"}' placeholder="">
-                    </div>
-                </div>
-            </div> -->
-    
-            <div class="columns is-multiline">
+        
                 <div class="column is-12 field env-var-container">
                     <label class="label">Environment Variables</label>
                     <div class="field is-grouped env-var">
@@ -232,14 +217,14 @@
                         </div>
                     </div>
                 </div>
-
+        
                 <div class="column is-12 field">
-                    <label class="label">Use SSH</label>
+                    <label class="label">Entrypoint Command</label>
                     <div class="control">
-                        <input type="checkbox" name="use_ssh" style="width: 20px; height: 20px;">
+                        <textarea class="textarea" name="entrypoint_command" placeholder="Command"></textarea>
                     </div>
-                </div>                
-    
+                </div>
+        
                 <div class="column is-12 field submit">
                     <div class="control">
                         <button class="button primary" id="submit">Launch</button>
@@ -247,8 +232,7 @@
                 </div>
             </div>
         </div>
-    </section>
-    
+    </section>    
 
     <footer class="section footer">
         <div class="container">

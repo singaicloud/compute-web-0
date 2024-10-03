@@ -21,7 +21,7 @@
             throw new Error("No session ID provided in the URL.");
         }
 
-        const socket = new WebSocket(`wss://gw.tacc.ust.hk:50010/${sessionId}/ws`);
+        const socket = new WebSocket(`wss://socket.web.tacc.ust.hk/${sessionId}/ws`);
 
         socket.onopen = function() {
             term.write('Connected to SSH...\r\n');

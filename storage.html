@@ -68,14 +68,66 @@
         </div>
     </section>
 
+    <section class="section upload-image">
+        <div class="container">
+            <h2 class="title">Upload Docker Image</h2>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="field">
+                    <label class="label">Select .tar file</label>
+                    <div class="control">
+                        <input type="file" name="file" id="fileInput" class="input" accept=".tar" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">User Hash</label>
+                    <div class="control">
+                        <input type="text" name="user_hash" id="userHashInput" class="input" required>
+                    </div>
+                </div>
+                <div class="control">
+                    <button type="button" id="uploadButton" class="button is-primary">Upload</button>
+                </div>
+            </form>
+            <div id="uploadResult" class="notification is-hidden"></div>
+        </div>
+    </section>
+
     <section class="section content"> 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 var currentPath = "./";
+                const userHash = 'demo-project';
+                document.getElementById("uploadButton").addEventListener("click", function() {
+                    var fileInput = document.getElementById("fileInput").files[0];
+                    var userHashInput = document.getElementById("userHashInput").value;
+                    var formData = new FormData();
+
+                    formData.append("file", fileInput);
+                    formData.append("user_hash", userHashInput);
+
+                    fetch(`https://api.tacc.ust.hk/${userHash}/upload-image`, {
+                        method: "POST",
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        var uploadResult = document.getElementById("uploadResult");
+                        uploadResult.classList.remove("is-hidden");
+                        uploadResult.classList.add(data.error ? "is-danger" : "is-success");
+                        uploadResult.textContent = data.message || data.error;
+                    })
+                    .catch(error => {
+                        console.log("Error uploading image:", error);
+                        var uploadResult = document.getElementById("uploadResult");
+                        uploadResult.classList.remove("is-hidden");
+                        uploadResult.classList.add("is-danger");
+                        uploadResult.textContent = "Error uploading image.";
+                    });
+                });
 
                 function action(event, id){
                     return (e)=>{
-                        e.stopPropagation(); // so that the table row will not expand
+                        e.stopPropagation();
                         alert(`Trigger ${event} ${id}`);
                     }
                 };
@@ -87,7 +139,7 @@
                 }
                 function fetchFileTrigger(path) {
                     return function() {
-                        window.open("https://api.tacc.ust.hk/storage/download?path="+path, '_blank');
+                        window.open(`https://api.tacc.ust.hk/${userHash}/storage/download?path=`+path, '_blank');
                     }
                 }
 
@@ -190,7 +242,7 @@
                         { targets: 3, orderable: 'false' },
                         { targets: 4, visible: false },
                     ];
-                    fetch("https://api.tacc.ust.hk/storage/list?path=" + path)
+                    fetch(`https://api.tacc.ust.hk/${userHash}/storage/list?path=` + path)
                         .then(response => response.json())
                         .then(response => {
                             if (response.code == 200) {

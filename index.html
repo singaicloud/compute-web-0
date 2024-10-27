@@ -70,13 +70,14 @@
 
     <section class="section content"> 
         <script>
+            const userHash = 'demo-project';
             document.addEventListener('DOMContentLoaded', function() {
                 function action(event, data, id, namespace, container_name){
                     return (e) => {
                         e.stopPropagation(); // so that the table row will not expand
                         
                         if (event === 'log') {
-                            fetch(`https://api.tacc.ust.hk/get-pod-log?namespace=${namespace}&pod_name=${container_name}`)
+                            fetch(`https://api.tacc.ust.hk/${userHash}/get-pod-log?namespace=${namespace}&pod_name=${container_name}`)
                                 .then(response => response.json())
                                 .then(data => {
                                     showModal(data.log);
@@ -120,7 +121,7 @@
                         } else if (event === 'delete') {
                             if (confirm(`Are you sure you want to delete the job ${data["Job Name"]}?`)) {
                                 document.getElementById("overlay").style.display = "block";
-                                fetch('https://api.tacc.ust.hk/delete-container', {
+                                fetch(`https://api.tacc.ust.hk/${userHash}/delete-container`, {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json'
@@ -306,7 +307,7 @@
                 }
 
                 function fetchPodInfo() {
-                    fetch("https://api.tacc.ust.hk/pods")
+                    fetch(`https://api.tacc.ust.hk/${userHash}/pods`)
                         .then(response => response.json())
                         .then(response => {
                             var row_data = []

@@ -40,88 +40,25 @@
         </div>
     </div>
 
-    <section class="section launchpad">
-        <div class="container">
-            <div class="options">
-                    <div class="option">
-                        <div class="image"><i class="fa-solid fa-book"></i></div>
-                        <div class="text">
-                            <a href="/launch.html"><div class="line1">Quick Launch</div></a>
-                            <div class="line2">Create a quick runtime as a notebook</div>
-                        </div>
-                    </div>
-                <div class="option">
-                    <div class="image"><i class="fa-solid fa-list-check"></i></div>
-                    <div class="text">
-                        <div class="line1">Launch</div>
-                        <div class="line2">Choose your runtime specifications</div>
-                    </div>
-                </div>
-                <div class="option">
-                    <div class="image"><i class="fa-solid fa-database"></i></div>
-                    <div class="text">
-                        <a href="/storage.html"><div class="line1">Manage Storage</div></a>
-                        <div class="line2">Access your cloud storage for all jobs</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <section class="section content"> 
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                function action(event, id){
-                    return (e)=>{
-                        e.stopPropagation(); // so that the table row will not expand
-                        alert(`Trigger ${event} ${id}`);
-                    }
-                };
-
-                function row_render(data, table){
-                    var header = ["ID", "Repository", "CreatedAt", "Size", "Tag"];
-                    var result = [];
-                    var display = $.create("tr", {
-                        contents: header.map((key) =>
-                            ({
-                                tag:"td", contents: data[key]
-                            })
-                        )
-                    });
-                    result.push(display);
-                    return result;
-                }
-
-                function header_render(){
-                    var header = ["Image ID", "Image Repository", "Creation Time", "Size", "Tag"];
-                    return $.create("thead", { contents:{
-                        tag: "tr",
-                        contents: header.map((key) =>
-                            ({tag:"th", contents: key})
-                        )
-                    }});
-                }
-
-                function fetchImageInfo() {
-                    fetch("https://api.tacc.ust.hk/images")
-                        .then(response => response.json())
-                        .then(response => {
-                            tacc.render_table(
-                                response, 
-                                header_render,
-                                row_render,
-                                ".main-table"
-                            );
-                        })
-                        .catch(error => {
-                            console.log(error);
-                        });
-                }
-                // Fetch and render the table on page load
-                fetchImageInfo();
-            });
-        </script>
-        <div class="container table main-table">
+        <div class="container">
+            <h1 class="title">Available Images</h1>
+            <p class="subtitle">Browse all available images in the TACC repository.</p>
+            <table id="imageTable" class="table is-striped is-hoverable is-fullwidth">
+                <thead>
+                    <tr>
+                        <th>Image Repository</th>
+                        <th>Image Name</th>
+                        <th>Tag</th>
+                        <th>Size</th>
+                        <th>Last Updated</th>
+                        <th>Architecture</th>
+                        <th>OS</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
     </section>
 
@@ -160,5 +97,82 @@
         </div>
     </footer>
 
+    <script>
+        // Fetch and render images from API
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchImageInfo();
+        });
+        const userHash = 'demo-project';
+
+        function fetchImageInfo() {
+            fetch(`https://api.tacc.ust.hk/${userHash}/image_info`)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#imageTable tbody');
+                    tableBody.innerHTML = ''; // Clear existing data
+
+                    // Traverse all repositories dynamically
+                    for (const [repository, images] of Object.entries(data.images)) {
+                        for (const [imageName, imageTags] of Object.entries(images)) {
+                            imageTags.forEach(tagData => {
+                                const row = document.createElement('tr');
+
+                                row.innerHTML = `
+                                    <td>${repository}</td>
+                                    <td>${imageName}</td>
+                                    <td>${tagData.tag}</td>
+                                    <td>${tagData.size}</td>
+                                    <td>${new Date(tagData.last_updated).toLocaleString()}</td>
+                                    <td>${tagData.architecture}</td>
+                                    <td>${tagData.os}</td>
+                                    <td><button class="button is-small is-link" onclick="showDetails('${encodeURIComponent(JSON.stringify(tagData))}')">View</button></td>
+                                `;
+
+                                tableBody.appendChild(row);
+                            });
+                        }
+                    }
+                })
+                .catch(error => console.error('Error fetching image data:', error));
+        }
+
+        function showDetails(details) {
+            details = JSON.parse(decodeURIComponent(details)); // Parse the JSON string
+
+            const detailContent = `
+                <p><strong>Digest:</strong> ${details.digest}</p>
+                <p><strong>Creator:</strong> ${details.creator}</p>
+                <p><strong>Introduction:</strong> ${details.introduction}</p>
+                <p><strong>Requirements:</strong> ${details.requirements}</p>
+                <p><strong>Version History:</strong> ${details.version_history}</p>
+                <h4 class="title is-6">Labels:</h4>
+                <ul>
+                    ${Object.entries(details.labels).map(
+                        ([key, value]) => `<li><strong>${key}:</strong> ${value}</li>`
+                    ).join('')}
+                </ul>
+            `;
+
+            const detailModal = document.createElement('div');
+            detailModal.classList.add('modal', 'is-active');
+            detailModal.innerHTML = `
+                <div class="modal-background"></div>
+                <div class="modal-content">
+                    <div class="box">
+                        <h4 class="title is-5">Image Details</h4>
+                        ${detailContent}
+                        <button class="button is-small is-danger is-fullwidth" onclick="closeModal()">Close</button>
+                    </div>
+                </div>
+                <button class="modal-close is-large" aria-label="close" onclick="closeModal()"></button>
+            `;
+            document.body.appendChild(detailModal);
+        }
+
+        function closeModal() {
+            const modal = document.querySelector('.modal.is-active');
+            if (modal) modal.remove();
+        }
+    </script>
 </body>
 </html>

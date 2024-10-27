@@ -38,18 +38,27 @@
     
     <section class="section form"> 
         <script>
+            const userHash = 'demo-project';
             document.addEventListener('DOMContentLoaded', function(){
                 // Function to fetch images from the API and populate the select box
                 function fetchImages() {
-                    fetch("https://api.tacc.ust.hk/images")
+                    fetch(`https://api.tacc.ust.hk/${userHash}/image_info`)
                         .then(response => response.json())
-                        .then(images => {
+                        .then(data => {
                             var select = document.querySelector('select[name="master_image"]');
-                            images.forEach(image => {
-                                var option = document.createElement('option');
-                                option.value = `${image.Repository}:${image.Tag}`;
-                                option.textContent = `${image.Repository}:${image.Tag}`;
-                                select.appendChild(option);
+                            select.innerHTML = "";
+                            
+                            Object.keys(data.images).forEach(registryUrl => {
+                                const images = data.images[registryUrl];
+                                
+                                Object.keys(images).forEach(imageName => {
+                                    images[imageName].forEach(imageInfo => {
+                                        var option = document.createElement('option');
+                                        option.value = `${registryUrl}/${imageName}:${imageInfo.tag}`;
+                                        option.textContent = `${registryUrl}/${imageName}:${imageInfo.tag}`;
+                                        select.appendChild(option);
+                                    });
+                                });
                             });
                         })
                         .catch(error => {
@@ -94,7 +103,8 @@
                         commandArray: document.querySelector('input[name="command"]').value.trim().split(/\s+/).map(arg => arg.trim()),
                         <!-- labels: JSON.parse(document.querySelector('input[name="labels"]').value) || {"app": "train-ddp"}, -->
                         env_vars: [],  // Initialize the env_vars array
-                        use_ssh: document.querySelector('input[name="use_ssh"]').checked // Get the value of the SSH checkbox
+                        use_ssh: document.querySelector('input[name="use_ssh"]').checked, // Get the value of the SSH checkbox
+                        gpu_type: document.querySelector('input[name="gpu_type"]').value || 'RTX3090'
                     };
     
                     // Collect environment variables
@@ -104,7 +114,7 @@
                             value: row.querySelector('input[name="env_value"]').value
                         });
                     });
-                    fetch('https://api.tacc.ust.hk/create-job', {
+                    fetch(`https://api.tacc.ust.hk/${userHash}/create-job`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -141,7 +151,7 @@
         <div class="container main-form">
             <div class="columns is-multiline">
                 <div class="column is-12">
-                    <div class="title">Create a Pytorch Job</div>
+                    <div class="title">Create a Job</div>
                     <div class="subtitle">A job creates with your choice of container image and runtime specifications</div>
                 </div>
             </div>
@@ -149,16 +159,16 @@
                 <div class="column is-4 field">
                     <label class="label">Namespace</label>
                     <div class="control">
-                        <input class="input" type="text" name="namespace" value="default" placeholder="default">
+                        <input class="input" type="text" name="namespace" value="demo-project" placeholder="demo-project">
                     </div>
                 </div>
                 <div class="column is-8 field">
                     <label class="label">Job Name</label>
                     <div class="control">
-                        <input class="input" type="text" name="job_name" value="pytorch-dist-mnist-nccl" placeholder="job_name">
+                        <input class="input" type="text" name="job_name" value="pytorch-dist-mnist-nccl" placeholder="pytorch-dist-mnist-nccl">
                     </div>
                 </div>
-            </div>
+            </div> 
     
             <div class="columns is-multiline">
                 <div class="column is-12 field">
@@ -170,6 +180,36 @@
                     </div>
                 </div>
             </div>
+
+            <div class="columns is-multiline">
+                <div class="column is-3 field">
+                    <label class="label">GPU</label>
+                    <div class="control">
+                        <button id="gpu-button" class="button" type="button">
+                            RTX3090
+                        </button>
+                        <input type="hidden" id="gpu-input" name="gpu_type" value="RTX3090">
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+                const gpuButton = document.getElementById('gpu-button');
+                const gpuInput = document.getElementById('gpu-input');
+                let isChecked = false;
+            
+                gpuButton.addEventListener('click', function(event) {
+                    isChecked = !isChecked;
+            
+                    if (isChecked) {
+                        gpuButton.innerHTML = '✔ RTX3090';
+                        gpuInput.value = 'RTX3090';
+                    } else {
+                        gpuButton.innerHTML = 'RTX3090';
+                        gpuInput.value = 'RTX3090';
+                    }
+                });
+            </script>
     
             <div class="columns is-multiline">
                 <div class="column is-3 field">
@@ -181,13 +221,13 @@
                 <div class="column is-3 field">
                     <label class="label">Memory</label>
                     <div class="control">
-                        <input class="input" type="text" name="memory_limit" value="256Mi" placeholder="256Mi">
+                        <input class="input" type="text" name="memory_limit" value="2Gi" placeholder="2Gi">
                     </div>
                 </div>
                 <div class="column is-3 field">
                     <label class="label">Worker Numbers</label>
                     <div class="control">
-                        <input class="input" type="text" name="worker_replicas" value="2" placeholder="2">
+                        <input class="input" type="text" name="worker_replicas" value="1" placeholder="1">
                     </div>
                 </div>
                 <div class="column is-3 field">

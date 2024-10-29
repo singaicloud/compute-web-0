@@ -21,7 +21,7 @@
             throw new Error("No session ID provided in the URL.");
         }
 
-        const socket = new WebSocket(`wss://api.singaicloud.com/ssh/${sessionId}`);
+        const socket = new WebSocket(`wss://ssh.api.singaicloud.com/${sessionId}`);
 
         socket.onopen = function() {
             term.write('Connected to SSH...\r\n');

@@ -42,7 +42,7 @@
             document.addEventListener('DOMContentLoaded', function(){
                 // Function to fetch images from the API and populate the select box
                 function fetchImages() {
-                    fetch(`https://api.singaicloud.com/${userHash}/image_info`)
+                    fetch(`https://api.singaicloud.com/${userHash}/image-info`)
                         .then(response => response.json())
                         .then(data => {
                             var select = document.querySelector('select[name="master_image"]');

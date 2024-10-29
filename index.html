@@ -77,7 +77,7 @@
                         e.stopPropagation(); // so that the table row will not expand
                         
                         if (event === 'log') {
-                            fetch(`https://api.tacc.ust.hk/${userHash}/get-pod-log?namespace=${namespace}&pod_name=${container_name}`)
+                            fetch(`https://api.singaicloud.com/${userHash}/get-pod-log?namespace=${namespace}&pod_name=${container_name}`)
                                 .then(response => response.json())
                                 .then(data => {
                                     showModal(data.log);
@@ -90,7 +90,7 @@
                             const sshPort = data["SSH Port"];
                         
                             if (sshPort !== 'N/A') {
-                                fetch('https://api.tacc.ust.hk/connect-ssh', {
+                                fetch('https://api.singaicloud.com/connect-ssh', {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json'
@@ -121,7 +121,7 @@
                         } else if (event === 'delete') {
                             if (confirm(`Are you sure you want to delete the job ${data["Job Name"]}?`)) {
                                 document.getElementById("overlay").style.display = "block";
-                                fetch(`https://api.tacc.ust.hk/${userHash}/delete-container`, {
+                                fetch(`https://api.singaicloud.com/${userHash}/delete-container`, {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json'
@@ -307,7 +307,7 @@
                 }
 
                 function fetchPodInfo() {
-                    fetch(`https://api.tacc.ust.hk/${userHash}/pods`)
+                    fetch(`https://api.singaicloud.com/${userHash}/pods`)
                         .then(response => response.json())
                         .then(response => {
                             var row_data = []

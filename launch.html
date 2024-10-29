@@ -42,7 +42,7 @@
             document.addEventListener('DOMContentLoaded', function(){
                 // Function to fetch images from the API and populate the select box
                 function fetchImages() {
-                    fetch(`https://api.tacc.ust.hk/${userHash}/image_info`)
+                    fetch(`https://api.singaicloud.com/${userHash}/image_info`)
                         .then(response => response.json())
                         .then(data => {
                             var select = document.querySelector('select[name="master_image"]');
@@ -114,7 +114,7 @@
                             value: row.querySelector('input[name="env_value"]').value
                         });
                     });
-                    fetch(`https://api.tacc.ust.hk/${userHash}/create-job`, {
+                    fetch(`https://api.singaicloud.com/${userHash}/create-job`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'

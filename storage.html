@@ -105,7 +105,7 @@
                     formData.append("file", fileInput);
                     formData.append("user_hash", userHashInput);
 
-                    fetch(`https://api.tacc.ust.hk/${userHash}/upload-image`, {
+                    fetch(`https://api.singaicloud.com/${userHash}/upload-image`, {
                         method: "POST",
                         body: formData
                     })
@@ -139,7 +139,7 @@
                 }
                 function fetchFileTrigger(path) {
                     return function() {
-                        window.open(`https://api.tacc.ust.hk/${userHash}/storage/download?path=`+path, '_blank');
+                        window.open(`https://api.singaicloud.com/${userHash}/storage/download?path=`+path, '_blank');
                     }
                 }
 
@@ -242,7 +242,7 @@
                         { targets: 3, orderable: 'false' },
                         { targets: 4, visible: false },
                     ];
-                    fetch(`https://api.tacc.ust.hk/${userHash}/storage/list?path=` + path)
+                    fetch(`https://api.singaicloud.com/${userHash}/storage/list?path=` + path)
                         .then(response => response.json())
                         .then(response => {
                             if (response.code == 200) {

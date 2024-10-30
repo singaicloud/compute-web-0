@@ -227,6 +227,8 @@ a:hover {
   vertical-align: middle!important;
   white-space: nowrap;
   max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .table thead {
   background-color: #f5f5f5;

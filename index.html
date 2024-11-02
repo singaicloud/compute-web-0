@@ -161,7 +161,7 @@
                                 saveButton.onclick = function() {
                                     const containerPort = document.getElementById('container-port-input').value;
                                     if (containerPort) {
-                                        fetch(`http://gw.tacc.ust.hk:18888/add_proxy?ip=${data["Pod IP"]}&name=${container_name}&port=${containerPort}`)
+                                        fetch(`https://api.singaicloud.com/port/add_proxy?ip=${data["Pod IP"]}&name=${container_name}&port=${containerPort}`)
                                             .then(response => {
                                                 const contentType = response.headers.get("content-type");
                                                 if (contentType && contentType.includes("application/json")) {
@@ -193,7 +193,7 @@
                                 deleteButton.onclick = function() {
                                     const containerPort = document.getElementById('container-port-input').value;
                                     if (containerPort) {
-                                        fetch(`http://gw.tacc.ust.hk:18888/remove_proxy?ip=${data["Pod IP"]}&name=${container_name}&port=${containerPort}`, {
+                                        fetch(`https://api.singaicloud.com/port/remove_proxy?ip=${data["Pod IP"]}&name=${container_name}&port=${containerPort}`, {
                                             method: 'GET'
                                         })
                                             .then(response => {
@@ -345,7 +345,7 @@
                     const existingMappings = document.getElementById('existing-port-mappings');
                 
                     // Fetch existing port mappings
-                    fetch(`http://gw.tacc.ust.hk:18888/get_port?ip=${containerIp}`)
+                    fetch(`https://api.singaicloud.com/port/get_port?ip=${containerIp}`)
                         .then(response => response.json())
                         .then(data => {
                             if (data.ports && data.ports.length > 0) {

@@ -16,29 +16,17 @@
     <!-- TACC Theme files -->
     <link href="assets/tacc-theme.css" rel="stylesheet">
     <script src="assets/tacc-theme.js"></script>
+    <script src="scripts/sing-api.js"></script>
+    <script type="module" src="./scripts/sing-theme.js"></script>
     
     <!-- Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/99d5980073.js" crossorigin="anonymous"></script>
+    <script async src="https://kit.fontawesome.com/99d5980073.js" crossorigin="anonymous"></script>
 </head>
 <body>
-    <div class="menubar">
-        <div class="container">
-            <div class="columns is-multiline is-desktop is-align-items-center is-justify-content-center">
-                <div class="column is-narrow logo has-text-centered"><a href="/"><img src="./assets/tacc-logo.png"></a></div>
-                <div class="column has-text-centered">
-                    <div class="columns is-mobile is-align-items-center items is-multiline">
-                        <div class="column is-narrow item"><a href="/">Jobs</a></div>
-                        <div class="column is-narrow item"><a href="storage.html">Storage</a></div>
-                        <div class="column is-narrow item"><a href="images.html">Images</a></div>
-                        <div class="column is-narrow item"><a href="#">Space</a></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <sing-navigation></sing-navigation>
 
     <section class="section launchpad">
         <div class="container">
@@ -139,7 +127,7 @@
                 }
                 function fetchFileTrigger(path) {
                     return function() {
-                        window.open(`https://api.singaicloud.com/${userHash}/storage/download?path=`+path, '_blank');
+                        window.open(`https://api.singaicloud.com/me/storage/download?path=`+path, '_blank');
                     }
                 }
 
@@ -242,8 +230,7 @@
                         { targets: 3, orderable: 'false' },
                         { targets: 4, visible: false },
                     ];
-                    fetch(`https://api.singaicloud.com/${userHash}/storage/list?path=` + path)
-                        .then(response => response.json())
+                    api.get(`/me/storage/list?path=` + path)
                         .then(response => {
                             if (response.code == 200) {
                                 tacc.render_table(

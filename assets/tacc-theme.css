@@ -12,7 +12,7 @@
   src: url("openai-500.otf");
 }
 body, html {
-  font-family: "OpenAI", "IBM Plex Sans", sans-serif !important;
+  font-family: "OpenAI", sans-serif !important;
   font-size: 16px;
   color: #080808;
   scroll-behavior: smooth;
@@ -21,9 +21,14 @@ body, html {
   --border-color: #e0e0e0;
   --background-grey: #f9f9f9;
   --brand-color: #452D6C;
+  -webkit-font-smoothing: antialiased;
+  min-width: 300px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  text-rendering: optimizeLegibility;
 }
 input, select, textarea {
-  font-family: "OpenAI", "IBM Plex Sans", sans-serif !important;
+  font-family: "OpenAI", sans-serif !important;
 }
 
 a {
@@ -82,56 +87,6 @@ a:hover {
 }
 
 /* Header and Footer */
-.menubar {
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid var(--border-color);
-  position: -webkit-sticky;
-  position: sticky;
-  z-index: 99999;
-  top: 0;
-  background: rgba(249, 249, 249, 0.56);
-  backdrop-filter: blur(9.5px);
-  -webkit-backdrop-filter: blur(9.5px);
-}
-.menubar .container>.columns::after {
-  flex: 1;
-  content: '';
-}
-.menubar .logo {
-  flex: 1;
-  display: flex;
-  align-items: center; /* align vertical */
-  height: 76px;
-}
-.menubar .logo a {
-  border: none;
-  display: flex;
-}
-.menubar .logo img {
-  height: 36px;
-}
-.menubar .items {
-  justify-content: center;
-  gap: 1rem;
-}
-.menubar .item {
-  font-size: 0.95rem;
-  font-weight: 400;
-  color: #080808;
-}
-@media screen and (max-width: 1024px){
-  .menubar .items {
-      margin-bottom: 0px;
-  }
-  .menubar .logo {
-      justify-content: center;
-      height: 60px;
-      padding-top: 25px;
-      padding-bottom: 0px;
-  }
-}
-
 .footer {
   position: sticky;
   top: 100%;
@@ -165,9 +120,9 @@ a:hover {
 
 /* Launchpad Area */
 .launchpad {
-  background-color: var(--background-grey);
   padding-top: 2rem;
   padding-bottom: 2rem;
+  border-bottom: 1px solid rgb(243, 244, 246);
 }
 .launchpad .options {
   display: flex;
@@ -184,7 +139,7 @@ a:hover {
   padding-top: .6rem;
   padding-bottom: .6rem;
   box-shadow: rgba(26, 26, 26, 0.07) 0px 1px 0px 0px;
-  background-color: white;
+  background-color: rgb(249, 250, 251);
   border-radius: 0.25rem;
   border: 1px solid var(--border-color);
   cursor: pointer;
@@ -209,7 +164,8 @@ a:hover {
   font-size: 1.2rem;
 }
 .launchpad .option .text .line2 {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+  color: #6e6e6e;
 }
 
 .launchpad.secondary {

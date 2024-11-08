@@ -1,0 +1,96 @@
+/* Global Style */
+@import url("/assets/minireset.css");
+
+@font-face {
+    font-family: "OpenAI";
+    font-style: normal;
+    font-weight: 400;
+    src: url("/assets/openai-400.otf");
+}
+
+@font-face {
+    font-family: "OpenAI";
+    font-style: normal;
+    font-weight: 600;
+    src: url("/assets/openai-500.otf");
+}
+
+body,
+html {
+    font-family: "OpenAI", sans-serif !important;
+    font-size: 16px;
+    color: #080808;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+    height: 100vh;
+    min-width: 300px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+input,
+select,
+textarea {
+    font-family: "OpenAI", sans-serif !important;
+}
+
+a {
+    color: #080808;
+    text-decoration: none;
+}
+
+a:hover {
+    border-bottom: 1px solid black;
+}
+
+.container {
+    flex-grow: 1;
+    margin: 0 auto;
+    position: relative;
+    width: auto;
+    padding: 0 2rem;
+}
+.flex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.flex-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+@media screen and (max-width: 767px) {
+    .container {
+        max-width: 960px;
+        padding: unset;
+    }
+}
+@media screen and (min-width: 768px) {
+    .flex-no-mobile {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+}
+@media screen and (min-width: 1024px) {
+    .container {
+        max-width: 960px;
+        padding: unset;
+    }
+}
+
+@media screen and (min-width: 1216px) {
+    .container:not(.is-max-960) {
+        max-width: 1152px;
+    }
+}
+
+@media screen and (min-width: 1408px) {
+    .container:not(.is-max-960) {
+        max-width: 1344px;
+    }
+}
+

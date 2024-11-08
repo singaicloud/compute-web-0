@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SING Dashboard | Scalable AI Infrastructure Designed for Evolving Machine Learning Research</title>
+
+    <!-- TACC Theme Files -->
+    <link href="assets/tacc-theme.css" rel="stylesheet">
+    <script src="assets/tacc-theme.js"></script>
+
+    <script src="scripts/sing-api.js"></script>
+    <script type="module" src="./scripts/sing-theme.js"></script>
+    <link href="scripts/sing-theme.css" rel="stylesheet">
+    <script defer src="assets/three.min.js"></script>
+    <script defer src="assets/vanta.globe.min.js"></script>
+</head>
+<body>
+    <style>
+        body {
+            background-color: black;
+            overflow: hidden;
+        }
+        .login {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+            position: relative;
+            z-index: 10;
+        }
+        .login-container {
+            width: 400px;
+            padding: 20px;
+            background-image: radial-gradient(100% 100% at top, rgba(157, 195, 247, .1), rgba(157, 195, 247, 0));
+            background-color: #5c5c5c1f;
+            border-radius: 1.5rem;
+        }
+        .login-header {
+            text-align: center;
+        }
+        .login-header .logo {
+            width: 10rem;
+        }
+        .login-subtitle {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+        .login-title {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+            background-image: linear-gradient(309deg, rgb(166, 221, 255) 2.25225%, rgb(51, 194, 255) 48.0785%, rgb(0, 119, 255) 100%);
+            background-clip: text;
+            text-shadow: 0px 4px 18px rgba(0, 130, 217, .85);
+            text-align: center;
+            color: white;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+        }
+        .login-body {
+            margin-top: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: .9rem;
+            margin-bottom: .5rem;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            background-color: transparent!important;
+            font-size: 1rem!important;
+            letter-spacing: 1px;
+            padding-left: 1rem;
+            height: 100%;
+            outline: none;
+            color: white;
+            position: relative;
+            top: -1px;
+            height: 3rem;
+            border: 1px solid rgb(0, 153, 255);
+            border-radius: 14px;
+        }
+        input:-webkit-autofill,
+        input:-webkit-autofill::first-line,
+        input:-webkit-autofill:focus {
+            transition: background-color 600000s 0s, color 600000s 0s;
+        }
+        input[data-autocompleted] {
+            background-color: transparent !important;
+        }
+        .btn {
+            color: black;
+            background-color: white;
+            backdrop-filter: blur(0px);
+            box-shadow: rgba(0, 0, 0, 0.18) 0px 0.602187px 1.80656px -1.25px, rgba(0, 0, 0, 0.16) 0px 2.28853px 6.8656px -2.5px, rgba(0, 0, 0, 0.063) 0px 10px 30px -3.75px;
+            opacity: 1;
+            border-radius: 10px;
+            padding: 10px 20px;
+            width: fit-content;
+            cursor: default;
+            font-weight: bold;
+            border: none;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        .btn:hover,
+        .btn:disabled {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition-property: background-color, color;
+            transition-duration: .3s;
+        }
+        .globe-3d {
+            overflow: visible;
+            position: relative;
+            top: -800px;
+            left: -30%;
+            width: 150%;
+            height: 1px;
+            opacity: 0.6;
+        }
+        .globe-3d .wrapper {
+            overflow: visible;
+            height: 1000px;
+            width: 100%;
+            position: absolute;
+        }
+        @media screen and (max-width: 768px) {
+            .globe-3d {
+                left: -50%;
+            }
+        }
+        @media screen and (max-width: 500px) {
+            .globe-3d {
+                top: -600px;
+                width: 100%;
+                left: 0%;
+            }
+        }
+    </style>
+    <div class="login">
+        <div class="login-container">
+            <div class="login-header flex-column">
+                <div class="logo"><a href="https://singaicloud.com/"><img src="assets/tacc-logo-white.png" alt="TACC Logo"></a></div>
+                <h1 class="login-title">Log In</h1>
+            </div>
+            <div class="login-body">
+                <form id="login-form" class="login-form">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" placeholder="Your Username" autocomplete="username" required>
+                        </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Password" autocomplete="password" required>
+                    </div>  
+                    <div class="form-group flex">
+                        <button type="submit" id="submit" class="btn btn-primary">Login</button> 
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="globe-3d"><div class="wrapper"></div></div>
+    <script>
+        document.getElementById('login-form').addEventListener('submit', (event) => {
+            event.preventDefault();
+            document.getElementById("submit").disabled = true;
+            document.getElementById("submit").innerHTML = "Logging in...";
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            api.login(username, password).then(ok => {
+                if (ok) {
+                    window.location.href = 'index.html';
+                } else {
+                    alert('Invalid username or password');
+                }
+            });
+        });
+        window.onload = function() {
+            VANTA.GLOBE({
+                el: ".globe-3d .wrapper",
+                size: 0.80,
+                backgroundColor: 0x0,
+                color: 0xafafaf,
+                color2: 0xafafaf,
+            });
+            // focus on username
+            document.getElementById('username').click();
+            document.getElementById('username').focus();
+        }
+    </script>
+</body>

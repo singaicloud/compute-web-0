@@ -12,6 +12,8 @@
     <!-- TACC Theme files -->
     <link href="assets/tacc-theme.css" rel="stylesheet">
     <script src="assets/tacc-theme.js"></script>
+    <script src="scripts/sing-api.js"></script>
+    <script type="module" src="./scripts/sing-theme.js"></script>
     
     <!-- Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,21 +22,7 @@
     <script src="https://kit.fontawesome.com/99d5980073.js" crossorigin="anonymous"></script>
 </head>
 <body>
-    <div class="menubar">
-        <div class="container">
-            <div class="columns is-multiline is-desktop is-align-items-center is-justify-content-center">
-                <div class="column is-narrow logo has-text-centered"><a href="/"><img src="./assets/tacc-logo.png"></a></div>
-                <div class="column has-text-centered">
-                    <div class="columns is-mobile is-align-items-center items is-multiline">
-                        <div class="column is-narrow item"><a href="/">Jobs</a></div>
-                        <div class="column is-narrow item"><a href="#">Storage</a></div>
-                        <div class="column is-narrow item"><a href="#">Images</a></div>
-                        <div class="column is-narrow item"><a href="#">Space</a></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <sing-navigation></sing-navigation>
     
     <section class="section form"> 
         <script>
@@ -42,8 +30,7 @@
             document.addEventListener('DOMContentLoaded', function(){
                 // Function to fetch images from the API and populate the select box
                 function fetchImages() {
-                    fetch(`https://api.singaicloud.com/${userHash}/image-info`)
-                        .then(response => response.json())
+                    api.get(`/me/image-info`)
                         .then(data => {
                             var select = document.querySelector('select[name="master_image"]');
                             select.innerHTML = "";

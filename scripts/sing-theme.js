@@ -51,7 +51,7 @@ export class Navigation extends LitElement {
             <link href="scripts/sing-theme.css" rel="stylesheet">
             <div class="menubar">
                 <div class="container flex-no-mobile">
-                    <div class="logo flex"><a href="/"><img src="./assets/tacc-logo.png"></a></div>
+                    <div class="logo flex"><a href="/"><img src="https://singaicloud.com/assets/sing-logo.png"></a></div>
                     <div class="items flex">
                         <div class="item"><a href="/">Jobs</a></div>
                         <div class="item"><a href="storage.html">Storage</a></div>

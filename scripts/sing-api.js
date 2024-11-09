@@ -7,16 +7,14 @@ class SingAPI {
     updateToken(token) {
         this.token = token;
     }
-    async fetch(path, data = {}, options = {}, redirect = true) {
+    async fetch(path, data, headers, options, redirect = true) {
         const url = `${this.baseUrl}${path}`;
-        console.log(`fetching ${url}`);
-        const headers = {
-            "Authorization": this.token ? `Bearer ${this.token}` : undefined,
-        };
+        if (this.token) {       
+            headers["Authorization"] = `Bearer ${this.token}`;
+        }
         var response;
         if (data) {
-            headers["Content-Type"] = "application/json";
-            response = await fetch(url, { ...options, headers, body: JSON.stringify(data) });
+            response = await fetch(url, { ...options, headers, body: data });
         } else {
             response = await fetch(url, { ...options, headers });
         }
@@ -32,14 +30,44 @@ class SingAPI {
         return response.json();
     }
     get(path, options = {}) {
-        return this.fetch(path, null, {...options, method: "GET" });
+        return this.fetch(path, null, {}, {...options, method: "GET" });
     }
     post(path, data, options = {}) {
-        return this.fetch(path, data, {...options, method: "POST" });
+        return this.fetch(path, JSON.stringify(data), {"Content-Type": "application/json"}, {...options, method: "POST" });
+    }
+    postForm(path, data, options = {}) {
+        return this.fetch(path, data, {}, {...options, method: "POST" });
+    }
+    download(path) {
+        const url = `${this.baseUrl}${path}`;
+        var headers = {};
+        headers["Authorization"] = `Bearer ${this.token}`;
+        fetch(url, {method: "GET", headers})
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.blob();  // Get the response as a blob
+        })
+        .then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = path.split("/").pop();
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url); // Clean up the URL
+        })
+        .catch(error => {
+          console.error(error);
+        });
+
     }
     async login(username, password) {
         const response = await this.fetch("/login", 
             {hash: username, password},
+            {"Content-Type": "application/json"},
             {method: "POST"},
             false,
         );

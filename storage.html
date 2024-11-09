@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TACC | Scalable AI Infrastructure Designed for Evolving Machine Learning Research</title>
+    <title>Dashboard | SING Cloud | Next-Gen AI Cloud</title>
     
     <!-- CSS and JS Libraries-->
     <script src="assets/bliss.js"></script>
@@ -93,11 +93,7 @@
                     formData.append("file", fileInput);
                     formData.append("user_hash", userHashInput);
 
-                    fetch(`https://api.singaicloud.com/${userHash}/upload-image`, {
-                        method: "POST",
-                        body: formData
-                    })
-                    .then(response => response.json())
+                    api.postForm(`/me/upload-image`, formData)
                     .then(data => {
                         var uploadResult = document.getElementById("uploadResult");
                         uploadResult.classList.remove("is-hidden");
@@ -126,9 +122,7 @@
                     }
                 }
                 function fetchFileTrigger(path) {
-                    return function() {
-                        window.open(`https://api.singaicloud.com/me/storage/download?path=`+path, '_blank');
-                    }
+                    return ()=>{api.download(`me/storage/download?path=`+path, '_blank');}
                 }
 
                 function row_render(data){

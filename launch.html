@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TACC | Scalable AI Infrastructure Designed for Evolving Machine Learning Research</title>
+    <title>Dashboard | SING Cloud | Next-Gen AI Cloud</title>
     
     <!-- Bluma CSS and Bliss JS-->
     <script src="assets/bliss.js"></script>
@@ -101,29 +101,7 @@
                             value: row.querySelector('input[name="env_value"]').value
                         });
                     });
-                    fetch(`https://api.singaicloud.com/${userHash}/create-job`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(data)
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(errData => {
-                                let errorMessage = 'Network response was not ok. Status: ' + response.status;
-                                if (response.statusText) {
-                                    errorMessage += ' (' + response.statusText + ')';
-                                }
-                                // Parse the detailed error message from response text
-                                let errorDetails = JSON.parse(errData.details);
-                                errorMessage += '\nmessage: ' + (errorDetails.message || 'No message provided');
-                                errorMessage += '\nreason: ' + (errorDetails.reason || 'No reason provided');
-                                throw new Error(errorMessage);
-                            });
-                        }
-                        return response.json();
-                    })
+                    api.post(`/me/create-job`, data)
                     .then(result => {
                         console.log('Success:', result);
                         alert('Container created successfully!');

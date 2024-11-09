@@ -66,7 +66,7 @@ class SingAPI {
     }
     async login(username, password) {
         const response = await this.fetch("/login", 
-            {hash: username, password},
+            JSON.stringify({hash: username, password}),
             {"Content-Type": "application/json"},
             {method: "POST"},
             false,

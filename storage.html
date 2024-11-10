@@ -122,7 +122,7 @@
                     }
                 }
                 function fetchFileTrigger(path) {
-                    return ()=>{api.download(`me/storage/download?path=`+path, '_blank');}
+                    return ()=>{api.download(`/me/storage/download?path=`+path, '_blank');}
                 }
 
                 function row_render(data){

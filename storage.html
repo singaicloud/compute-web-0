@@ -56,58 +56,10 @@
         </div>
     </section>
 
-    <section class="section upload-image">
-        <div class="container">
-            <h2 class="title">Upload Docker Image</h2>
-            <form id="uploadForm" enctype="multipart/form-data">
-                <div class="field">
-                    <label class="label">Select .tar file</label>
-                    <div class="control">
-                        <input type="file" name="file" id="fileInput" class="input" accept=".tar" required>
-                    </div>
-                </div>
-                <div class="field">
-                    <label class="label">User Hash</label>
-                    <div class="control">
-                        <input type="text" name="user_hash" id="userHashInput" class="input" required>
-                    </div>
-                </div>
-                <div class="control">
-                    <button type="button" id="uploadButton" class="button is-primary">Upload</button>
-                </div>
-            </form>
-            <div id="uploadResult" class="notification is-hidden"></div>
-        </div>
-    </section>
-
     <section class="section content"> 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 var currentPath = "./";
-                const userHash = 'demo-project';
-                document.getElementById("uploadButton").addEventListener("click", function() {
-                    var fileInput = document.getElementById("fileInput").files[0];
-                    var userHashInput = document.getElementById("userHashInput").value;
-                    var formData = new FormData();
-
-                    formData.append("file", fileInput);
-                    formData.append("user_hash", userHashInput);
-
-                    api.postForm(`/me/upload-image`, formData)
-                    .then(data => {
-                        var uploadResult = document.getElementById("uploadResult");
-                        uploadResult.classList.remove("is-hidden");
-                        uploadResult.classList.add(data.error ? "is-danger" : "is-success");
-                        uploadResult.textContent = data.message || data.error;
-                    })
-                    .catch(error => {
-                        console.log("Error uploading image:", error);
-                        var uploadResult = document.getElementById("uploadResult");
-                        uploadResult.classList.remove("is-hidden");
-                        uploadResult.classList.add("is-danger");
-                        uploadResult.textContent = "Error uploading image.";
-                    });
-                });
 
                 function action(event, id){
                     return (e)=>{

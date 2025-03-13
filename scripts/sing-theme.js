@@ -25,6 +25,7 @@ export class Navigation extends LitElement {
         .menubar .logo a {
             border: none;
             display: flex;
+            line-height: 1.9;
         }
         .menubar .logo img {
             height: 36px;

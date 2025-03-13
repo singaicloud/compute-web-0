@@ -1,4 +1,3 @@
-
 class SingAPI {
     constructor(token, baseUrl="https://api.singaicloud.com") {
         this.baseUrl = baseUrl;
@@ -83,4 +82,7 @@ class SingAPI {
 
 // read token from cookie
 const token = document.cookie.split(";").find((c) => c.startsWith("token="))?.split("=")[1];
-var api = new SingAPI(token);
+var baseUrl = window.location.hostname === "my.singaicloud.com" 
+    ? "https://api.singaicloud.com" 
+    : "https://api.nova.singaicloud.com";
+var api = new SingAPI(token, baseUrl);

@@ -1,0 +1,63 @@
+/* Launch page specific styles */
+
+.gpu-option {
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.gpu-worker-option {
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.port-entry {
+    margin-bottom: 10px;
+}
+
+/* Selection styles with higher priority selectors */
+.button.is-selected,
+.buttons .button.is-selected {
+    background-color: #3273dc !important;
+    border-color: #3273dc !important;
+    color: white !important;
+    font-weight: bold !important;
+    box-shadow: 0 0 0 2px rgba(50, 115, 220, 0.5) !important;
+}
+
+/* UI Improvements */
+.main-form {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.form-section {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.section-title {
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #363636;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.label {
+    font-weight: 500;
+}
+
+.button.primary {
+    background-color: #3273dc;
+    color: white;
+    font-weight: 500;
+    padding: 0 20px;
+    height: 40px;
+}
+
+.button.primary:hover {
+    background-color: #276cda;
+} 

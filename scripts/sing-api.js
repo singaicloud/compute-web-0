@@ -32,7 +32,43 @@ class SingAPI {
         return this.fetch(path, null, {}, {...options, method: "GET" });
     }
     post(path, data, options = {}) {
-        return this.fetch(path, JSON.stringify(data), {"Content-Type": "application/json"}, {...options, method: "POST" });
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', this.baseUrl + path, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            
+            if (this.token) {
+                xhr.setRequestHeader('Authorization', 'Bearer ' + this.token);
+            }
+            
+            xhr.onload = function() {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        resolve(response);
+                    } catch (e) {
+                        resolve(xhr.responseText);
+                    }
+                } else {
+                    const error = new Error('request failed');
+                    error.status = xhr.status;
+                    error.response = xhr.responseText;
+                    
+                    try {
+                        error.responseData = JSON.parse(xhr.responseText);
+                    } catch (e) {
+                    }
+                    
+                    reject(error);
+                }
+            };
+            
+            xhr.onerror = function() {
+                reject(new Error('network error'));
+            };
+            
+            xhr.send(JSON.stringify(data));
+        });
     }
     postForm(path, data, options = {}) {
         return this.fetch(path, data, {}, {...options, method: "POST" });

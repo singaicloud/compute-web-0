@@ -114,70 +114,40 @@
                             }
                         } else if (event === 'edit') {
                             if (data["Status"] === 'Running') {
-                                showPortMappingModal(data["Pod IP"]);
+                                showPortMappingModal(data["Pod IP"], data["Container Name"]);
                         
                                 const saveButton = document.getElementById('save-port-mapping');
-                                const cancelButton = document.getElementById('cancel-port-mapping');
-                                const deleteButton = document.getElementById('delete-port-mapping');
                             
                                 saveButton.onclick = function() {
                                     const containerPort = document.getElementById('container-port-input').value;
                                     if (containerPort) {
-                                        fetch(`https://api.singaicloud.com/port/add_proxy?ip=${data["Pod IP"]}&name=${container_name}&port=${containerPort}`)
+                                        api.get(`/port/add_proxy?ip=${data["Pod IP"]}&name=${data["Container Name"]}&port=${containerPort}`)
                                             .then(response => {
-                                                const contentType = response.headers.get("content-type");
-                                                if (contentType && contentType.includes("application/json")) {
-                                                    return response.json();
-                                                } else {
-                                                    return response.text();
-                                                }
-                                            })
-                                            .then(data => {
-                                                if (typeof data === 'string') {
-                                                    alert(data);
-                                                } else if (data.port) {
-                                                    alert(`Successfully mapped container port ${containerPort} to external port ${data.port}`);
+                                                const modal = document.getElementById('port-modal');
+                                                modal.classList.remove('is-active');
+                                                setTimeout(() => {
+                                                    showPortMappingModal(data["Pod IP"], data["Container Name"]);
+                                                }, 2);
+                                                if (typeof response === 'string') {
+                                                    alert(response);
+                                                } else if (response.port) {
+                                                    alert(`Successfully mapped container port ${containerPort} to external port ${response.port}`);
                                                 } else {
                                                     alert('Failed to map port.');
                                                 }
-                                                hideModal();
                                             })
                                             .catch(error => {
-                                                console.error('Error mapping port:', error);
-                                            });
-                                    }
-                                };
-                        
-                                cancelButton.onclick = function() {
-                                    hideModal();
-                                };
-                        
-                                deleteButton.onclick = function() {
-                                    const containerPort = document.getElementById('container-port-input').value;
-                                    if (containerPort) {
-                                        fetch(`https://api.singaicloud.com/port/remove_proxy?ip=${data["Pod IP"]}&name=${container_name}&port=${containerPort}`, {
-                                            method: 'GET'
-                                        })
-                                            .then(response => {
-                                                const contentType = response.headers.get("content-type");
-                                                if (contentType && contentType.includes("application/json")) {
-                                                    return response.json();
+                                                if (error.message && error.message.includes('not valid JSON')) {
+                                                    alert(`Successfully mapped container port ${containerPort}`);
+                                                    const modal = document.getElementById('port-modal');
+                                                    modal.classList.remove('is-active');
+                                                    setTimeout(() => {
+                                                        showPortMappingModal(data["Pod IP"], data["Container Name"]);
+                                                    }, 2);
                                                 } else {
-                                                    return response.text();
+                                                    console.error('Error mapping port:', error);
+                                                    alert('Failed to map port.');
                                                 }
-                                            })
-                                            .then(data => {
-                                                if (typeof data === 'string') {
-                                                    alert(data);
-                                                } else if (data.message) {
-                                                    alert(`Successfully removed port mapping: ${containerPort}`);
-                                                } else {
-                                                    alert('Failed to remove port mapping.');
-                                                }
-                                                hideModal();
-                                            })
-                                            .catch(error => {
-                                                console.error('Error removing port mapping:', error);
                                             });
                                     }
                                 };
@@ -301,24 +271,130 @@
                     modal.classList.remove('is-active');
                 }
 
-                function showPortMappingModal(containerIp) {
+                function showPortMappingModal(podIp, containerName) {
                     const modal = document.getElementById('port-modal');
                     const existingMappings = document.getElementById('existing-port-mappings');
-                
+                    const modalClose = modal.querySelector('.modal-close');
+                    const modalBackground = modal.querySelector('.modal-background');
+
+                    // Clear previous input
+                    document.getElementById('container-port-input').value = '';
+
+                    function portMappingHeaderRender() {
+                        var header = ["Container Port", "Allocated Port", "Action"];
+                        return $.create("thead", { contents: {
+                            tag: "tr",
+                            contents: header.map((key) =>
+                                ({
+                                    tag: "th",
+                                    contents: key,
+                                    style: {
+                                        textAlign: 'center'
+                                    }
+                                })
+                            )
+                        }});
+                    }
+
+                    function portMappingRowRender(mappings) {
+                        var header = ["Container Port", "Allocated Port", "Action"];
+                        var result = [];
+                        mappings.forEach(mapping => {
+                            var display = $.create("tr", {
+                                contents: header.map((key) =>
+                                    ({
+                                        tag: "td",
+                                        contents: (() => {
+                                            switch (key) {
+                                                case "Action":
+                                                    return $.create("div", {
+                                                        className: "actions",
+                                                        contents: [
+                                                            {
+                                                                tag: "div",
+                                                                events: {
+                                                                    click: (e) => {
+                                                                        e.stopPropagation();
+                                                                        if (confirm(`Are you sure you want to delete port mapping ${mapping.container_port}?`)) {
+                                                                            api.get(`/port/remove_proxy?ip=${podIp}&name=${containerName}&port=${mapping.container_port}`, null, true)
+                                                                                .then(response => {
+                                                                                    alert(`Successfully removed port mapping: ${mapping.container_port}`);                                                                                
+                                                                                    const modal = document.getElementById('port-modal');
+                                                                                    modal.classList.remove('is-active');
+                                                                                    setTimeout(() => {
+                                                                                        showPortMappingModal(podIp, containerName);
+                                                                                    }, 2);
+                                                                                })
+                                                                                .catch(error => {
+                                                                                    if (error.message && error.message.includes('not valid JSON')) {
+                                                                                        alert(`Successfully removed port mapping: ${mapping.container_port}`);
+                                                                                        const modal = document.getElementById('port-modal');
+                                                                                        modal.classList.remove('is-active');
+                                                                                        setTimeout(() => {
+                                                                                            showPortMappingModal(podIp, containerName);
+                                                                                        }, 2);
+                                                                                    } else {
+                                                                                        console.error('Error removing port mapping:', error);
+                                                                                        alert('Failed to remove port mapping.');
+                                                                                    }
+                                                                                });
+                                                                        }
+                                                                    }
+                                                                },
+                                                                contents: {
+                                                                    tag: "i",
+                                                                    className: "fa-solid fa-trash-alt"
+                                                                }
+                                                            }
+                                                        ]
+                                                    });
+                                                case "Container Port":
+                                                    return mapping.container_port;
+                                                case "Allocated Port":
+                                                    return mapping.allocated_port;
+                                            }
+                                        })()
+                                    })
+                                )
+                            });
+                            result.push(display);
+                        });
+                        return result;
+                    }
+
                     // Fetch existing port mappings
-                    fetch(`https://api.singaicloud.com/port/get_port?ip=${containerIp}`)
-                        .then(response => response.json())
+                    api.get(`/port/get_port?ip=${podIp}`)
                         .then(data => {
+                            existingMappings.innerHTML = '';
+                            
+                            // Create title
+                            const titleDiv = document.createElement('div');
+                            titleDiv.className = 'content';
+                            titleDiv.innerHTML = '<h4 class="title is-6">Existing Mappings</h4>';
+                            existingMappings.appendChild(titleDiv);
+
                             if (data.ports && data.ports.length > 0) {
-                                existingMappings.innerHTML = '';
-                
-                                data.ports.forEach(mapping => {
-                                    const mappingElement = document.createElement('p');
-                                    mappingElement.textContent = `Container port ${mapping.container_port} -> Allocated port ${mapping.allocated_port}`;
-                                    existingMappings.appendChild(mappingElement);
+                                const tableContainer = document.createElement('div');
+                                tableContainer.className = 'table-container';
+                                existingMappings.appendChild(tableContainer);
+
+                                const table = document.createElement('table');
+                                table.className = 'table is-fullwidth is-striped';
+                                tableContainer.appendChild(table);
+
+                                // Add header
+                                table.appendChild(portMappingHeaderRender());
+
+                                // Add body
+                                const tbody = document.createElement('tbody');
+                                portMappingRowRender(data.ports).forEach(row => {
+                                    tbody.appendChild(row);
                                 });
+                                table.appendChild(tbody);
                             } else {
-                                existingMappings.textContent = 'No existing port mappings found.';
+                                const noDataDiv = document.createElement('p');
+                                noDataDiv.textContent = 'No existing port mappings';
+                                existingMappings.appendChild(noDataDiv);
                             }
                         })
                         .catch(error => {
@@ -327,12 +403,10 @@
                         });
                 
                     modal.classList.add('is-active');
-                
-                    modal.addEventListener('click', (e) => {
-                        if (e.target === modal) {
-                            hideModal();
-                        }
-                    });
+
+                    // Add close handlers
+                    modalClose.onclick = hideModal;
+                    modalBackground.onclick = hideModal;
                 }
                 
                 function hideModal() {
@@ -403,15 +477,26 @@
     </div>
 
     <div id="port-modal" class="modal">
+        <div class="modal-background"></div>
         <div class="modal-content">
-            <h2>Edit Port Mapping</h2>
-            <p id="existing-port-mappings"></p>
-            <label for="container-port-input">Container Port:</label>
-            <input type="text" id="container-port-input" />
-            <button id="save-port-mapping">Save</button>
-            <button id="delete-port-mapping">Delete</button>
-            <button id="cancel-port-mapping">Cancel</button>
+            <div class="box">
+                <h3 class="title is-5">Port Mapping</h3>
+                <div id="existing-port-mappings" class="mb-4"></div>
+                <div class="field">
+                    <label class="label">Add New Port Mapping</label>
+                    <div class="control">
+                        <input id="container-port-input" class="input" type="number" placeholder="Enter container port (e.g.8080)">
+                    </div>
+                    <p class="help">Specify the port number that your application uses inside the container</p>
+                </div>
+                <div class="field is-grouped">
+                    <div class="control">
+                        <button id="save-port-mapping" class="button is-link">Map Port</button>
+                    </div>
+                </div>
+            </div>
         </div>
+        <button class="modal-close is-large" aria-label="close"></button>
     </div>
     
     

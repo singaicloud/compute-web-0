@@ -309,56 +309,50 @@
                     card.setAttribute('data-job-name', jobName);
                     card.innerHTML = `
                         <div class="job-card-header" onclick="toggleJobContainers('${jobId}')">
-                            <div class="expand-icon-container">
-                                <span class="expand-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                            <div class="job-header-top">
+                                <div class="job-title">
+                                    <span class="status-badge ${statusClass}">${firstContainer["Status"]}</span>
+                                    ${jobName}
+                                </div>
+                                <div class="job-actions">
+                                    <div class="job-action-button info" onclick="event.stopPropagation(); showSetupInfo('${jobName}')">
+                                        <i class="fa-solid fa-info-circle"></i>
+                                        <span>Info</span>
+                                    </div>
+                                    <div class="job-action-button copy" onclick="event.stopPropagation(); cloneJob('${jobName}')">
+                                        <i class="fa-regular fa-clone"></i>
+                                        <span>Clone</span>
+                                    </div>
+                                    <div class="job-action-button stop" onclick="event.stopPropagation(); stopJob('${jobName}', '${firstContainer["Namespace"]}', ${JSON.stringify(containers)})">
+                                        <i class="fa-solid fa-stop"></i>
+                                        <span>Stop</span>
+                                    </div>
+                                    <div class="job-action-button danger" onclick="event.stopPropagation(); deleteJob('${jobName}', '${firstContainer["Namespace"]}', ${JSON.stringify(containers)})">
+                                        <i class="fa-regular fa-trash-alt"></i>
+                                        <span>Delete</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="table-container">
-                                <table class="table is-fullwidth">
-                                    <thead>
-                                        <tr>
-                                            <th>User</th>
-                                            <th>Job Name</th>
-                                            <th>Creation Time</th>
-                                            <th>GPU</th>
-                                            <th>Status</th>
-                                            <th>Image</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>${firstContainer["Namespace"]}</td>
-                                            <td>${jobName}</td>
-                                            <td>${firstContainer["Creation Time"]}</td>
-                                            <td>${totalGPU || "0"}</td>
-                                            <td><span class="status-badge ${statusClass}">${firstContainer["Status"]}</span></td>
-                                            <td>${formatImageName(firstContainer["Image"])}</td>
-                                            <td>
-                                                <div class="actions">
-                                                    <div class="action-item" onclick="event.stopPropagation(); showSetupInfo('${jobName}')">
-                                                        <i class="fa-solid fa-info-circle"></i>
-                                                        <span>Setup Info</span>
-                                                    </div>
-                                                    <div class="action-item" onclick="event.stopPropagation(); stopJob('${jobName}', '${firstContainer["Namespace"]}', ${JSON.stringify(containers)})">
-                                                        <i class="fa-solid fa-stop"></i>
-                                                        <span>Stop</span>
-                                                    </div>
-                                                    <div class="action-item" onclick="event.stopPropagation(); cloneJob('${jobName}')">
-                                                        <i class="fa-regular fa-clone"></i>
-                                                        <span>Clone</span>
-                                                    </div>
-                                                    <div class="action-item" onclick="event.stopPropagation(); deleteJob('${jobName}', '${firstContainer["Namespace"]}', ${JSON.stringify(containers)})">
-                                                        <i class="fa-regular fa-trash-alt"></i>
-                                                        <span>Delete</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                            <div class="job-meta">
+                                <div class="job-meta-item">
+                                    <i class="fa-solid fa-user job-meta-icon"></i>
+                                    <div class="job-meta-value">${firstContainer["Namespace"]}</div>
+                                </div>
+                                <div class="job-meta-item">
+                                    <i class="fa-solid fa-clock job-meta-icon"></i>
+                                    <div class="job-meta-value">${firstContainer["Creation Time"]}</div>
+                                </div>
+                                <div class="job-meta-item">
+                                    <i class="fa-solid fa-microchip job-meta-icon"></i>
+                                    <div class="job-meta-value">${totalGPU || "0"} GPU</div>
+                                </div>
+                                <div class="job-meta-item">
+                                    <i class="fa-solid fa-database job-meta-icon"></i>
+                                    <div class="job-meta-value job-image" title="${firstContainer["Image"]}">${formatImageName(firstContainer["Image"])}</div>
+                                </div>
                             </div>
                         </div>
-                        <div id="${jobId}" class="job-containers" style="display: none; margin-top: 1rem;">
+                        <div id="${jobId}" class="job-containers" style="display: none;">
                             <div class="table-container">
                                 <table id="${tableId}" class="table is-fullwidth container-table">
                                     <thead>
@@ -394,14 +388,14 @@
                                                         <div class="actions">
                                                             <div class="action-item" onclick="editContainer('${container["Pod IP"]}', '${container["Container Name"]}', '${container["Status"]}')">
                                                                 <i class="fa-regular fa-pen-to-square"></i>
-                                                                <span>Port Mapping</span>
+                                                                <span>Port</span>
                                                             </div>
                                                             <div class="action-item" onclick="showContainerLog('${container["Namespace"]}', '${container["Container Name"]}')">
                                                                 <i class="fa-solid fa-file-alt"></i>
                                                                 <span>Output</span>
                                                             </div>
                                                             <div class="action-item" onclick="showSshCommand('${container["Pod IP"]}', '${container["SSH Port"]}')">
-                                                                <i class="fa-solid fa-terminal"></i>
+                                                                <i class="fa-solid fa-link"></i>
                                                                 <span>SSH</span>
                                                             </div>
                                                             <div class="action-item" onclick="connectSsh('${container["SSH Port"]}')">

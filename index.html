@@ -94,7 +94,7 @@
                                 alert("SSH port is not available.");
                             }                        
                         } else if (event === 'delete') {
-                            if (confirm(`Are you sure you want to delete the job ${data["Job Name"]}?`)) {
+                            if (confirm(`Are you sure you want to delete the container ${data["Container Name"]}?`)) {
                                 document.getElementById("overlay").style.display = "block";
                                 api.post(`/me/delete-container`, 
                                     {
@@ -120,46 +120,9 @@
                         } else if (event === 'edit') {
                             if (data["Status"] === 'Running') {
                                 showPortMappingModal(data["Pod IP"], data["Container Name"]);
-                        
-                                const saveButton = document.getElementById('save-port-mapping');
-                            
-                                saveButton.onclick = function() {
-                                    const containerPort = document.getElementById('container-port-input').value;
-                                    if (containerPort) {
-                                        api.get(`/port/add_proxy?ip=${data["Pod IP"]}&name=${data["Container Name"]}&port=${containerPort}`)
-                                            .then(response => {
-                                                const modal = document.getElementById('port-modal');
-                                                modal.classList.remove('is-active');
-                                                setTimeout(() => {
-                                                    showPortMappingModal(data["Pod IP"], data["Container Name"]);
-                                                }, 2);
-                                                if (typeof response === 'string') {
-                                                    alert(response);
-                                                } else if (response.port) {
-                                                    alert(`Successfully mapped container port ${containerPort} to external port ${response.port}`);
-                                                } else {
-                                                    alert('Failed to map port.');
-                                                }
-                                            })
-                                            .catch(error => {
-                                                if (error.message && error.message.includes('not valid JSON')) {
-                                                    alert(`Successfully mapped container port ${containerPort}`);
-                                                    const modal = document.getElementById('port-modal');
-                                                    modal.classList.remove('is-active');
-                                                    setTimeout(() => {
-                                                        showPortMappingModal(data["Pod IP"], data["Container Name"]);
-                                                    }, 2);
-                                                } else {
-                                                    console.error('Error mapping port:', error);
-                                                    alert('Failed to map port.');
-                                                }
-                                            });
-                                    }
-                                };
                             } else {
                                 alert('Cannot edit. The container is not running.');
                             }
-                            
                         } else {
                             alert(`Trigger ${event} ${id}`);
                         }
@@ -545,6 +508,7 @@
                 // Job card actions
                 // setup info
                 window.showSetupInfo = function(jobName) {
+                    // attention: not implemented yet, will update
                     alert(`Setup information for ${jobName}`);
                 };
                 
@@ -634,6 +598,42 @@
 
                     // Clear previous input
                     document.getElementById('container-port-input').value = '';
+
+                    // Set up the save button click handler
+                    const saveButton = document.getElementById('save-port-mapping');
+                    saveButton.onclick = function() {
+                        const containerPort = document.getElementById('container-port-input').value;
+                        if (containerPort) {
+                            api.get(`/port/add_proxy?ip=${podIp}&name=${containerName}&port=${containerPort}`, null, true)
+                                .then(response => {
+                                    const modal = document.getElementById('port-modal');
+                                    modal.classList.remove('is-active');
+                                    setTimeout(() => {
+                                        showPortMappingModal(podIp, containerName);
+                                    }, 2);
+                                    if (typeof response === 'string') {
+                                        alert(response);
+                                    } else if (response.port) {
+                                        alert(`Successfully mapped container port ${containerPort} to external port ${response.port}`);
+                                    } else {
+                                        alert('Failed to map port.');
+                                    }
+                                })
+                                .catch(error => {
+                                    if (error.message && error.message.includes('not valid JSON')) {
+                                        alert(`Successfully mapped container port ${containerPort}`);
+                                        const modal = document.getElementById('port-modal');
+                                        modal.classList.remove('is-active');
+                                        setTimeout(() => {
+                                            showPortMappingModal(podIp, containerName);
+                                        }, 2);
+                                    } else {
+                                        console.error('Error mapping port:', error);
+                                        alert('Failed to map port.');
+                                    }
+                                });
+                        }
+                    };
 
                     function portMappingHeaderRender() {
                         var header = ["Container Port", "Allocated Port", "Action"];

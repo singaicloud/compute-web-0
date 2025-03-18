@@ -199,52 +199,56 @@
                                             });
                                         case "Actions":
                                             return $.create("div", {
-                                                className: "actions",
-                                                contents: [
-                                                    {   tag: "div",
-                                                        className: "action-item",
-                                                        events: {
-                                                            click: action("edit", data, data["Container ID"], data["Namespace"], data["Container Name"])
+                                                className: "actions-container",
+                                                contents: {
+                                                    tag: "div",
+                                                    className: "actions",
+                                                    contents: [
+                                                        {   tag: "div",
+                                                            className: "action-item",
+                                                            events: {
+                                                                click: action("edit", data, data["Container ID"], data["Namespace"], data["Container Name"])
+                                                            },
+                                                            contents: [
+                                                                {tag:"i", className: "fa-regular fa-pen-to-square"},
+                                                                {tag:"span", contents: "Port Mapping"}
+                                                            ]
                                                         },
-                                                        contents: [
-                                                            {tag:"i", className: "fa-regular fa-pen-to-square"},
-                                                            {tag:"span", contents: "Port Mapping"}
-                                                        ]
-                                                    },
-                                                    {   tag: "div", 
-                                                        className: "action-item",
-                                                        events: {
-                                                            click: action("log", data, data["Container ID"], data["Namespace"], data["Container Name"])
+                                                        {   tag: "div", 
+                                                            className: "action-item",
+                                                            events: {
+                                                                click: action("log", data, data["Container ID"], data["Namespace"], data["Container Name"])
+                                                            },
+                                                            contents: [
+                                                                {tag:"i", className: "fa-solid fa-file-alt"},
+                                                                {tag:"span", contents: "Output"}
+                                                            ]
                                                         },
-                                                        contents: [
-                                                            {tag:"i", className: "fa-solid fa-file-alt"},
-                                                            {tag:"span", contents: "Output"}
-                                                        ]
-                                                    },
-                                                    {   tag: "div", 
-                                                        className: "action-item",
-                                                        events: {
-                                                            click: (e) => {
-                                                                e.stopPropagation();
-                                                                showSshCommandModal(data["Pod IP"], data["SSH Port"]);
-                                                            }
+                                                        {   tag: "div", 
+                                                            className: "action-item",
+                                                            events: {
+                                                                click: (e) => {
+                                                                    e.stopPropagation();
+                                                                    showSshCommandModal(data["Pod IP"], data["SSH Port"]);
+                                                                }
+                                                            },
+                                                            contents: [
+                                                                {tag:"i", className: "fa-solid fa-terminal"},
+                                                                {tag:"span", contents: "SSH"}
+                                                            ]
                                                         },
-                                                        contents: [
-                                                            {tag:"i", className: "fa-solid fa-terminal"},
-                                                            {tag:"span", contents: "SSH"}
-                                                        ]
-                                                    },
-                                                    {   tag: "div", 
-                                                        className: "action-item",
-                                                        events: {
-                                                            click: action("ssh", data, data["Container ID"], data["Namespace"], data["Container Name"])
-                                                        },
-                                                        contents: [
-                                                            {tag:"i", className: "fa-solid fa-terminal"},
-                                                            {tag:"span", contents: "Terminal"}
-                                                        ]
-                                                    }
-                                                ]
+                                                        {   tag: "div", 
+                                                            className: "action-item",
+                                                            events: {
+                                                                click: action("ssh", data, data["Container ID"], data["Namespace"], data["Container Name"])
+                                                            },
+                                                            contents: [
+                                                                {tag:"i", className: "fa-solid fa-terminal"},
+                                                                {tag:"span", contents: "Terminal"}
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
                                             });
                                         default:
                                             return data[key];
@@ -347,7 +351,7 @@
                                     <div class="job-meta-value">${totalGPU || "0"} GPU</div>
                                 </div>
                                 <div class="job-meta-item">
-                                    <i class="fa-solid fa-database job-meta-icon"></i>
+                                    <i class="fa-solid fa-cube job-meta-icon"></i>
                                     <div class="job-meta-value job-image" title="${firstContainer["Image"]}">${formatImageName(firstContainer["Image"])}</div>
                                 </div>
                             </div>
@@ -374,7 +378,6 @@
                                                                 <span class="status-badge ${containerStatusClass}">${container["Status"]}</span>
                                                                 <span>${container["Container ID"]}</span>
                                                             </div>
-                                                            <div>${container["Pod IP"]}</div>
                                                         </div>
                                                     </td>
                                                     <td>${container["Container Name"]}</td>
@@ -385,22 +388,24 @@
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <div class="actions">
-                                                            <div class="action-item" onclick="editContainer('${container["Pod IP"]}', '${container["Container Name"]}', '${container["Status"]}')">
-                                                                <i class="fa-regular fa-pen-to-square"></i>
-                                                                <span>Port</span>
-                                                            </div>
-                                                            <div class="action-item" onclick="showContainerLog('${container["Namespace"]}', '${container["Container Name"]}')">
-                                                                <i class="fa-solid fa-file-alt"></i>
-                                                                <span>Output</span>
-                                                            </div>
-                                                            <div class="action-item" onclick="showSshCommand('${container["Pod IP"]}', '${container["SSH Port"]}')">
-                                                                <i class="fa-solid fa-link"></i>
-                                                                <span>SSH</span>
-                                                            </div>
-                                                            <div class="action-item" onclick="connectSsh('${container["SSH Port"]}')">
-                                                                <i class="fa-solid fa-terminal"></i>
-                                                                <span>Terminal</span>
+                                                        <div class="actions-container">
+                                                            <div class="actions">
+                                                                <div class="action-item" onclick="editContainer('${container["Pod IP"]}', '${container["Container Name"]}', '${container["Status"]}')">
+                                                                    <i class="fa-regular fa-pen-to-square"></i>
+                                                                    <span>Port</span>
+                                                                </div>
+                                                                <div class="action-item" onclick="showContainerLog('${container["Namespace"]}', '${container["Container Name"]}')">
+                                                                    <i class="fa-solid fa-file-alt"></i>
+                                                                    <span>Output</span>
+                                                                </div>
+                                                                <div class="action-item" onclick="showSshCommand('${container["Pod IP"]}', '${container["SSH Port"]}')">
+                                                                    <i class="fa-solid fa-link"></i>
+                                                                    <span>SSH</span>
+                                                                </div>
+                                                                <div class="action-item" onclick="connectSsh('${container["SSH Port"]}')">
+                                                                    <i class="fa-solid fa-terminal"></i>
+                                                                    <span>Terminal</span>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -448,6 +453,14 @@
                                         info: true,
                                         pageLength: 5,
                                         lengthMenu: [5, 10, 25, 50],
+                                        autoWidth: false,
+                                        responsive: true,
+                                        columnDefs: [
+                                            { width: "25%", targets: 0 },
+                                            { width: "25%", targets: 1 },
+                                            { width: "15%", targets: 2 },
+                                            { width: "35%", targets: 3, responsivePriority: 1 }
+                                        ],
                                         language: {
                                             search: "",
                                             searchPlaceholder: "Search containers..."

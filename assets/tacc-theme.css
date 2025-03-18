@@ -338,3 +338,140 @@ a:hover {
 .main-form {
   max-width: 860px!important;
 }
+
+/* Tooltip Style */
+.info-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #3273dc;
+  color: white;
+  text-align: center;
+  line-height: 16px;
+  font-size: 12px;
+  margin-left: 5px;
+  cursor: help;
+}
+
+.gpu-tooltip {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  max-width: 300px;
+  z-index: 1000;
+  line-height: 1.5;
+  box-shadow: 0 3px 15px rgba(0,0,0,0.3);
+  text-align: left;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.gpu-tooltip.visible {
+  opacity: 1;
+}
+
+/* Actions Style */
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.action-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.action-item i {
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.action-item span {
+  font-size: 12px;
+}
+
+/* Table Style */
+.main-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.main-table th {
+  text-align: center;
+  padding: 10px;
+}
+
+.main-table td {
+  padding: 15px 10px;
+  text-align: center;
+}
+
+.main-table th:nth-child(1),
+.main-table td:nth-child(1) {
+  width: 20%;
+}
+
+.main-table th:nth-child(2),
+.main-table td:nth-child(2) {
+  width: 25%;
+}
+
+.main-table th:nth-child(3),
+.main-table td:nth-child(3) {
+  width: 15%;
+}
+
+.main-table th:nth-child(4),
+.main-table td:nth-child(4) {
+  width: 40%;
+}
+
+/* Status Style */
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-right: 5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.status-running {
+  background-color: #e3f9e5;
+  color: #0d8921;
+  border: 1px solid #a1e5b0;
+}
+
+.status-pending, .status-containercreating, .status-podinitialized {
+  background-color: #fff8e6;
+  color: #b76e00;
+  border: 1px solid #ffe3a3;
+}
+
+.status-failed, .status-error, .status-crashloopbackoff {
+  background-color: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
+
+.status-completed, .status-succeeded {
+  background-color: #e8f0fe;
+  color: #1967d2;
+  border: 1px solid #c6dafc;
+}
+
+.status-unknown, .status-na {
+  background-color: #f5f5f5;
+  color: #757575;
+  border: 1px solid #e0e0e0;
+}

@@ -94,7 +94,7 @@
                                 alert("SSH port is not available.");
                             }                        
                         } else if (event === 'delete') {
-                            if (confirm(`Are you sure you want to delete the job ${data["Job Name"]}?`)) {
+                            if (confirm(`Are you sure you want to delete the container ${data["Container Name"]}?`)) {
                                 document.getElementById("overlay").style.display = "block";
                                 api.post(`/me/delete-container`, 
                                     {
@@ -120,46 +120,9 @@
                         } else if (event === 'edit') {
                             if (data["Status"] === 'Running') {
                                 showPortMappingModal(data["Pod IP"], data["Container Name"]);
-                        
-                                const saveButton = document.getElementById('save-port-mapping');
-                            
-                                saveButton.onclick = function() {
-                                    const containerPort = document.getElementById('container-port-input').value;
-                                    if (containerPort) {
-                                        api.get(`/port/add_proxy?ip=${data["Pod IP"]}&name=${data["Container Name"]}&port=${containerPort}`)
-                                            .then(response => {
-                                                const modal = document.getElementById('port-modal');
-                                                modal.classList.remove('is-active');
-                                                setTimeout(() => {
-                                                    showPortMappingModal(data["Pod IP"], data["Container Name"]);
-                                                }, 2);
-                                                if (typeof response === 'string') {
-                                                    alert(response);
-                                                } else if (response.port) {
-                                                    alert(`Successfully mapped container port ${containerPort} to external port ${response.port}`);
-                                                } else {
-                                                    alert('Failed to map port.');
-                                                }
-                                            })
-                                            .catch(error => {
-                                                if (error.message && error.message.includes('not valid JSON')) {
-                                                    alert(`Successfully mapped container port ${containerPort}`);
-                                                    const modal = document.getElementById('port-modal');
-                                                    modal.classList.remove('is-active');
-                                                    setTimeout(() => {
-                                                        showPortMappingModal(data["Pod IP"], data["Container Name"]);
-                                                    }, 2);
-                                                } else {
-                                                    console.error('Error mapping port:', error);
-                                                    alert('Failed to map port.');
-                                                }
-                                            });
-                                    }
-                                };
                             } else {
                                 alert('Cannot edit. The container is not running.');
                             }
-                            
                         } else {
                             alert(`Trigger ${event} ${id}`);
                         }
@@ -199,52 +162,56 @@
                                             });
                                         case "Actions":
                                             return $.create("div", {
-                                                className: "actions",
-                                                contents: [
-                                                    {   tag: "div",
-                                                        className: "action-item",
-                                                        events: {
-                                                            click: action("edit", data, data["Container ID"], data["Namespace"], data["Container Name"])
+                                                className: "actions-container",
+                                                contents: {
+                                                    tag: "div",
+                                                    className: "actions",
+                                                    contents: [
+                                                        {   tag: "div",
+                                                            className: "action-item",
+                                                            events: {
+                                                                click: action("edit", data, data["Container ID"], data["Namespace"], data["Container Name"])
+                                                            },
+                                                            contents: [
+                                                                {tag:"i", className: "fa-regular fa-pen-to-square"},
+                                                                {tag:"span", contents: "Port Mapping"}
+                                                            ]
                                                         },
-                                                        contents: [
-                                                            {tag:"i", className: "fa-regular fa-pen-to-square"},
-                                                            {tag:"span", contents: "Port Mapping"}
-                                                        ]
-                                                    },
-                                                    {   tag: "div", 
-                                                        className: "action-item",
-                                                        events: {
-                                                            click: action("log", data, data["Container ID"], data["Namespace"], data["Container Name"])
+                                                        {   tag: "div", 
+                                                            className: "action-item",
+                                                            events: {
+                                                                click: action("log", data, data["Container ID"], data["Namespace"], data["Container Name"])
+                                                            },
+                                                            contents: [
+                                                                {tag:"i", className: "fa-solid fa-file-alt"},
+                                                                {tag:"span", contents: "Output"}
+                                                            ]
                                                         },
-                                                        contents: [
-                                                            {tag:"i", className: "fa-solid fa-file-alt"},
-                                                            {tag:"span", contents: "Output"}
-                                                        ]
-                                                    },
-                                                    {   tag: "div", 
-                                                        className: "action-item",
-                                                        events: {
-                                                            click: (e) => {
-                                                                e.stopPropagation();
-                                                                showSshCommandModal(data["Pod IP"], data["SSH Port"]);
-                                                            }
+                                                        {   tag: "div", 
+                                                            className: "action-item",
+                                                            events: {
+                                                                click: (e) => {
+                                                                    e.stopPropagation();
+                                                                    showSshCommandModal(data["Pod IP"], data["SSH Port"]);
+                                                                }
+                                                            },
+                                                            contents: [
+                                                                {tag:"i", className: "fa-solid fa-terminal"},
+                                                                {tag:"span", contents: "SSH"}
+                                                            ]
                                                         },
-                                                        contents: [
-                                                            {tag:"i", className: "fa-solid fa-terminal"},
-                                                            {tag:"span", contents: "SSH"}
-                                                        ]
-                                                    },
-                                                    {   tag: "div", 
-                                                        className: "action-item",
-                                                        events: {
-                                                            click: action("ssh", data, data["Container ID"], data["Namespace"], data["Container Name"])
-                                                        },
-                                                        contents: [
-                                                            {tag:"i", className: "fa-solid fa-terminal"},
-                                                            {tag:"span", contents: "Terminal"}
-                                                        ]
-                                                    }
-                                                ]
+                                                        {   tag: "div", 
+                                                            className: "action-item",
+                                                            events: {
+                                                                click: action("ssh", data, data["Container ID"], data["Namespace"], data["Container Name"])
+                                                            },
+                                                            contents: [
+                                                                {tag:"i", className: "fa-solid fa-terminal"},
+                                                                {tag:"span", contents: "Terminal"}
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
                                             });
                                         default:
                                             return data[key];
@@ -309,56 +276,50 @@
                     card.setAttribute('data-job-name', jobName);
                     card.innerHTML = `
                         <div class="job-card-header" onclick="toggleJobContainers('${jobId}')">
-                            <div class="expand-icon-container">
-                                <span class="expand-icon"><i class="fa-solid fa-chevron-down"></i></span>
+                            <div class="job-header-top">
+                                <div class="job-title">
+                                    <span class="status-badge ${statusClass}">${firstContainer["Status"]}</span>
+                                    ${jobName}
+                                </div>
+                                <div class="job-actions">
+                                    <div class="job-action-button info" onclick="event.stopPropagation(); showSetupInfo('${jobName}')">
+                                        <i class="fa-solid fa-info-circle"></i>
+                                        <span>Info</span>
+                                    </div>
+                                    <div class="job-action-button copy" onclick="event.stopPropagation(); cloneJob('${jobName}')">
+                                        <i class="fa-regular fa-clone"></i>
+                                        <span>Clone</span>
+                                    </div>
+                                    <div class="job-action-button stop" onclick="event.stopPropagation(); stopJob('${jobName}', '${firstContainer["Namespace"]}', ${JSON.stringify(containers)})">
+                                        <i class="fa-solid fa-stop"></i>
+                                        <span>Stop</span>
+                                    </div>
+                                    <div class="job-action-button danger" onclick="event.stopPropagation(); deleteJob('${jobName}', '${firstContainer["Namespace"]}', ${JSON.stringify(containers)})">
+                                        <i class="fa-regular fa-trash-alt"></i>
+                                        <span>Delete</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="table-container">
-                                <table class="table is-fullwidth">
-                                    <thead>
-                                        <tr>
-                                            <th>User</th>
-                                            <th>Job Name</th>
-                                            <th>Creation Time</th>
-                                            <th>GPU</th>
-                                            <th>Status</th>
-                                            <th>Image</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Demo-project</td>
-                                            <td>${jobName}</td>
-                                            <td>${firstContainer["Creation Time"]}</td>
-                                            <td>${totalGPU || "0"}</td>
-                                            <td><span class="status-badge ${statusClass}">${firstContainer["Status"]}</span></td>
-                                            <td>Default/serving</td>
-                                            <td>
-                                                <div class="actions">
-                                                    <div class="action-item" onclick="event.stopPropagation(); showSetupInfo('${jobName}')">
-                                                        <i class="fa-solid fa-info-circle"></i>
-                                                        <span>Setup Info</span>
-                                                    </div>
-                                                    <div class="action-item" onclick="event.stopPropagation(); stopJob('${jobName}', '${firstContainer["Namespace"]}', ${JSON.stringify(containers)})">
-                                                        <i class="fa-solid fa-stop"></i>
-                                                        <span>Stop</span>
-                                                    </div>
-                                                    <div class="action-item" onclick="event.stopPropagation(); cloneJob('${jobName}')">
-                                                        <i class="fa-regular fa-clone"></i>
-                                                        <span>Clone</span>
-                                                    </div>
-                                                    <div class="action-item" onclick="event.stopPropagation(); deleteJob('${jobName}', '${firstContainer["Namespace"]}', ${JSON.stringify(containers)})">
-                                                        <i class="fa-regular fa-trash-alt"></i>
-                                                        <span>Delete</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                            <div class="job-meta">
+                                <div class="job-meta-item">
+                                    <i class="fa-solid fa-user job-meta-icon"></i>
+                                    <div class="job-meta-value">${firstContainer["Namespace"]}</div>
+                                </div>
+                                <div class="job-meta-item">
+                                    <i class="fa-solid fa-clock job-meta-icon"></i>
+                                    <div class="job-meta-value">${firstContainer["Creation Time"]}</div>
+                                </div>
+                                <div class="job-meta-item">
+                                    <i class="fa-solid fa-microchip job-meta-icon"></i>
+                                    <div class="job-meta-value">${totalGPU || "0"} GPU</div>
+                                </div>
+                                <div class="job-meta-item">
+                                    <i class="fa-solid fa-cube job-meta-icon"></i>
+                                    <div class="job-meta-value job-image" title="${firstContainer["Image"]}">${formatImageName(firstContainer["Image"])}</div>
+                                </div>
                             </div>
                         </div>
-                        <div id="${jobId}" class="job-containers" style="display: none; margin-top: 1rem;">
+                        <div id="${jobId}" class="job-containers" style="display: none;">
                             <div class="table-container">
                                 <table id="${tableId}" class="table is-fullwidth container-table">
                                     <thead>
@@ -380,7 +341,6 @@
                                                                 <span class="status-badge ${containerStatusClass}">${container["Status"]}</span>
                                                                 <span>${container["Container ID"]}</span>
                                                             </div>
-                                                            <div>${container["Pod IP"]}</div>
                                                         </div>
                                                     </td>
                                                     <td>${container["Container Name"]}</td>
@@ -391,22 +351,24 @@
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <div class="actions">
-                                                            <div class="action-item" onclick="editContainer('${container["Pod IP"]}', '${container["Container Name"]}', '${container["Status"]}')">
-                                                                <i class="fa-regular fa-pen-to-square"></i>
-                                                                <span>Port Mapping</span>
-                                                            </div>
-                                                            <div class="action-item" onclick="showContainerLog('${container["Namespace"]}', '${container["Container Name"]}')">
-                                                                <i class="fa-solid fa-file-alt"></i>
-                                                                <span>Output</span>
-                                                            </div>
-                                                            <div class="action-item" onclick="showSshCommand('${container["Pod IP"]}', '${container["SSH Port"]}')">
-                                                                <i class="fa-solid fa-terminal"></i>
-                                                                <span>SSH</span>
-                                                            </div>
-                                                            <div class="action-item" onclick="connectSsh('${container["SSH Port"]}')">
-                                                                <i class="fa-solid fa-terminal"></i>
-                                                                <span>Terminal</span>
+                                                        <div class="actions-container">
+                                                            <div class="actions">
+                                                                <div class="action-item" onclick="editContainer('${container["Pod IP"]}', '${container["Container Name"]}', '${container["Status"]}')">
+                                                                    <i class="fa-regular fa-pen-to-square"></i>
+                                                                    <span>Port</span>
+                                                                </div>
+                                                                <div class="action-item" onclick="showContainerLog('${container["Namespace"]}', '${container["Container Name"]}')">
+                                                                    <i class="fa-solid fa-file-alt"></i>
+                                                                    <span>Output</span>
+                                                                </div>
+                                                                <div class="action-item" onclick="showSshCommand('${container["Pod IP"]}', '${container["SSH Port"]}')">
+                                                                    <i class="fa-solid fa-link"></i>
+                                                                    <span>SSH</span>
+                                                                </div>
+                                                                <div class="action-item" onclick="connectSsh('${container["SSH Port"]}')">
+                                                                    <i class="fa-solid fa-terminal"></i>
+                                                                    <span>Terminal</span>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -454,6 +416,14 @@
                                         info: true,
                                         pageLength: 5,
                                         lengthMenu: [5, 10, 25, 50],
+                                        autoWidth: false,
+                                        responsive: true,
+                                        columnDefs: [
+                                            { width: "25%", targets: 0 },
+                                            { width: "25%", targets: 1 },
+                                            { width: "15%", targets: 2 },
+                                            { width: "35%", targets: 3, responsivePriority: 1 }
+                                        ],
                                         language: {
                                             search: "",
                                             searchPlaceholder: "Search containers..."
@@ -538,6 +508,7 @@
                 // Job card actions
                 // setup info
                 window.showSetupInfo = function(jobName) {
+                    // attention: not implemented yet, will update
                     alert(`Setup information for ${jobName}`);
                 };
                 
@@ -627,6 +598,42 @@
 
                     // Clear previous input
                     document.getElementById('container-port-input').value = '';
+
+                    // Set up the save button click handler
+                    const saveButton = document.getElementById('save-port-mapping');
+                    saveButton.onclick = function() {
+                        const containerPort = document.getElementById('container-port-input').value;
+                        if (containerPort) {
+                            api.get(`/port/add_proxy?ip=${podIp}&name=${containerName}&port=${containerPort}`, null, true)
+                                .then(response => {
+                                    const modal = document.getElementById('port-modal');
+                                    modal.classList.remove('is-active');
+                                    setTimeout(() => {
+                                        showPortMappingModal(podIp, containerName);
+                                    }, 2);
+                                    if (typeof response === 'string') {
+                                        alert(response);
+                                    } else if (response.port) {
+                                        alert(`Successfully mapped container port ${containerPort} to external port ${response.port}`);
+                                    } else {
+                                        alert('Failed to map port.');
+                                    }
+                                })
+                                .catch(error => {
+                                    if (error.message && error.message.includes('not valid JSON')) {
+                                        alert(`Successfully mapped container port ${containerPort}`);
+                                        const modal = document.getElementById('port-modal');
+                                        modal.classList.remove('is-active');
+                                        setTimeout(() => {
+                                            showPortMappingModal(podIp, containerName);
+                                        }, 2);
+                                    } else {
+                                        console.error('Error mapping port:', error);
+                                        alert('Failed to map port.');
+                                    }
+                                });
+                        }
+                    };
 
                     function portMappingHeaderRender() {
                         var header = ["Container Port", "Allocated Port", "Action"];
@@ -864,6 +871,15 @@
                         tooltip.classList.remove('visible');
                     }
                 });
+
+                function formatImageName(imagePath) {
+                    if (!imagePath) return 'N/A';
+                    const parts = imagePath.split('/');
+                    if (parts.length >= 2) {
+                        return parts[parts.length - 1];
+                    }
+                    return imagePath;
+                }
             });
         </script>
     </section>

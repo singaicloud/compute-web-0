@@ -327,12 +327,12 @@
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td>Demo-project</td>
+                                            <td>${firstContainer["Namespace"]}</td>
                                             <td>${jobName}</td>
                                             <td>${firstContainer["Creation Time"]}</td>
                                             <td>${totalGPU || "0"}</td>
                                             <td><span class="status-badge ${statusClass}">${firstContainer["Status"]}</span></td>
-                                            <td>Default/serving</td>
+                                            <td>${formatImageName(firstContainer["Image"])}</td>
                                             <td>
                                                 <div class="actions">
                                                     <div class="action-item" onclick="event.stopPropagation(); showSetupInfo('${jobName}')">
@@ -864,6 +864,15 @@
                         tooltip.classList.remove('visible');
                     }
                 });
+
+                function formatImageName(imagePath) {
+                    if (!imagePath) return 'N/A';
+                    const parts = imagePath.split('/');
+                    if (parts.length >= 2) {
+                        return parts[parts.length - 1];
+                    }
+                    return imagePath;
+                }
             });
         </script>
     </section>

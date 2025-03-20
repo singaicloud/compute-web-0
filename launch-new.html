@@ -102,24 +102,16 @@
 
                 // Fetch images from API and populate select box
                 function fetchImages() {
-                    api.get(`/me/image-info`)
+                    api.get(`/me/images`)
                         .then(data => {
                             var select = document.querySelector('select[name="master_image"]');
                             select.innerHTML = "";
                             
-                            Object.keys(data.images).forEach(registryUrl => {
-                                const images = data.images[registryUrl];
-                                
-                                Object.keys(images).forEach(imageName => {
-                                    images[imageName].forEach(imageInfo => {
-                                        var option = document.createElement('option');
-                                        const fullImageName = `${registryUrl}/${imageName}:${imageInfo.tag}`;
-                                        option.value = fullImageName;
-                                        option.textContent = fullImageName;
-                                        
-                                        select.appendChild(option);
-                                    });
-                                });
+                            data.images.forEach(image => {
+                                var option = document.createElement('option');
+                                option.value = image.full_name;
+                                option.textContent = image.full_name;
+                                select.appendChild(option);
                             });
                             
                             if (!select.value && select.options.length > 0) {

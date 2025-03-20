@@ -274,6 +274,12 @@
                     const card = document.createElement('div');
                     card.className = 'box job-card';
                     card.setAttribute('data-job-name', jobName);
+
+                    // Store container data in a global variable to avoid JSON serialization issues
+                    if (!window.jobContainers) window.jobContainers = {};
+                    const jobContainerId = `job_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+                    window.jobContainers[jobContainerId] = containers;
+
                     card.innerHTML = `
                         <div class="job-card-header" onclick="toggleJobContainers('${jobId}')">
                             <div class="job-header-top">
@@ -290,11 +296,11 @@
                                         <i class="fa-regular fa-clone"></i>
                                         <span>Clone</span>
                                     </div>
-                                    <div class="job-action-button stop" onclick="event.stopPropagation(); stopJob('${jobName}', '${firstContainer["Namespace"]}', ${JSON.stringify(containers)})">
+                                    <div class="job-action-button stop" onclick="event.stopPropagation(); stopJob('${jobName}', '${firstContainer["Namespace"]}', '${jobContainerId}')">
                                         <i class="fa-solid fa-stop"></i>
                                         <span>Stop</span>
                                     </div>
-                                    <div class="job-action-button danger" onclick="event.stopPropagation(); deleteJob('${jobName}', '${firstContainer["Namespace"]}', ${JSON.stringify(containers)})">
+                                    <div class="job-action-button danger" onclick="event.stopPropagation(); deleteJob('${jobName}', '${firstContainer["Namespace"]}', '${jobContainerId}')">
                                         <i class="fa-regular fa-trash-alt"></i>
                                         <span>Delete</span>
                                     </div>
@@ -483,6 +489,11 @@
                 
                 // show ssh command
                 window.showSshCommand = function(podIp, sshPort) {
+                    // if sshPort is not available, return
+                    if (sshPort === 'N/A') {
+                        alert('SSH port is not available.');
+                        return;
+                    }
                     showSshCommandModal(podIp, sshPort);
                 };
                 
@@ -501,7 +512,7 @@
                             console.error('Error connecting to SSH:', error);
                         });
                     } else {
-                        alert("SSH port is not available.");
+                        alert("SSH connection is not available.");
                     }
                 };
                 
@@ -513,7 +524,13 @@
                 };
                 
                 // stop action
-                window.stopJob = function(jobName, namespace, containers) {
+                window.stopJob = function(jobName, namespace, containersId) {
+                    const containers = window.jobContainers[containersId];
+                    // if job status is not running, return
+                    if (containers[0]["Status"] !== 'Running') {
+                        alert('The job is not running.');
+                        return;
+                    }
                     if (confirm(`Are you sure you want to stop the job ${jobName}?`)) {
                         document.getElementById("overlay").style.display = "block";
                         
@@ -547,7 +564,8 @@
                 };
                 
                 // delete action
-                window.deleteJob = function(jobName, namespace, containers) {
+                window.deleteJob = function(jobName, namespace, containersId) {
+                    const containers = window.jobContainers[containersId];
                     if (confirm(`Are you sure you want to delete the job ${jobName}?`)) {
                         document.getElementById("overlay").style.display = "block";
                         

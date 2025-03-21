@@ -49,12 +49,98 @@
                     const selectedImage = document.querySelector('select[name="master_image"]').value;
                     if (!selectedImage) {
                         console.log("No image selected, keeping default settings");
+                        document.getElementById('image-metadata-container').style.display = 'none';
                         return;
                     }
                     
                     console.log(`Image selected: ${selectedImage}`);
+                    
+                    // 找到选中的image对象
+                    const selectedImageObj = window.imagesData?.images?.find(img => img.full_name === selectedImage);
+                    
+                    if (selectedImageObj) {
+                        // 显示元数据
+                        displayImageMetadata(selectedImageObj);
+                        
+                        // 自动填充默认端口
+                        if (selectedImageObj.default_ports) {
+                            document.querySelector('.exposed-port').value = selectedImageObj.default_ports;
+                        }
+                        
+                        // 如果有默认入口点，自动填充命令
+                        if (selectedImageObj.default_entrypoint) {
+                            document.querySelector('input[name="command"]').value = selectedImageObj.default_entrypoint;
+                        }
+                    } else {
+                        document.getElementById('image-metadata-container').style.display = 'none';
+                    }
                 }
 
+                // 显示镜像元数据
+                function displayImageMetadata(imageData) {
+                    const metadataContainer = document.getElementById('image-metadata-container');
+                    const metadataContent = document.getElementById('image-metadata-content');
+                    
+                    // 检查是否有元数据
+                    if (!imageData) {
+                        metadataContainer.style.display = 'none';
+                        return;
+                    }
+                    
+                    // 要显示的三个指定元数据字段
+                    const metadataFields = [
+                        { key: "description", label: "Description" },
+                        { key: "default_ports", label: "Default Ports" },
+                        { key: "default_entrypoint", label: "Default Entrypoint" }
+                    ];
+                    
+                    // 创建简洁的显示格式，无论是否有值都显示这三个字段
+                    let html = '';
+                    
+                    metadataFields.forEach(field => {
+                        const value = imageData[field.key] && imageData[field.key].toString().trim() !== '' ? 
+                            imageData[field.key] : '';
+                        
+                        html += `<div class="mb-1">
+                            <span class="has-text-grey is-size-7">${field.label}: </span>
+                            <span class="has-text-grey is-size-7">${value}</span>
+                        </div>`;
+                    });
+                    
+                    metadataContent.innerHTML = html;
+                    metadataContainer.style.display = 'block';
+                }
+
+                // Fetch images from API and populate select box
+                function fetchImages() {
+                    api.get(`/me/images`)
+                        .then(data => {
+                            // 保存所有镜像数据以便后续使用
+                            window.imagesData = data;
+                            
+                            var select = document.querySelector('select[name="master_image"]');
+                            select.innerHTML = "";
+                            
+                            data.images.forEach(image => {
+                                var option = document.createElement('option');
+                                option.value = image.full_name;
+                                option.textContent = image.full_name;
+                                select.appendChild(option);
+                            });
+                            
+                            if (!select.value && select.options.length > 0) {
+                                select.selectedIndex = 0;
+                            }
+                            
+                            handleImageChange();
+                            
+                            select.addEventListener('change', handleImageChange);
+                        })
+                        .catch(error => {
+                            console.error("Failed to fetch images:", error);
+                        });
+                }
+                
                 // Fetch available GPU information
                 function fetchGpuInfo() {
                     api.get(`/gpu-info`)
@@ -97,33 +183,6 @@
                         })
                         .catch(error => {
                             console.error("Failed to fetch GPU info:", error);
-                        });
-                }
-
-                // Fetch images from API and populate select box
-                function fetchImages() {
-                    api.get(`/me/images`)
-                        .then(data => {
-                            var select = document.querySelector('select[name="master_image"]');
-                            select.innerHTML = "";
-                            
-                            data.images.forEach(image => {
-                                var option = document.createElement('option');
-                                option.value = image.full_name;
-                                option.textContent = image.full_name;
-                                select.appendChild(option);
-                            });
-                            
-                            if (!select.value && select.options.length > 0) {
-                                select.selectedIndex = 0;
-                            }
-                            
-                            handleImageChange();
-                            
-                            select.addEventListener('change', handleImageChange);
-                        })
-                        .catch(error => {
-                            console.error("Failed to fetch images:", error);
                         });
                 }
                 
@@ -415,6 +474,11 @@
                             <select name="master_image"></select>
                         </div>
                     </div>
+                </div>
+                
+                <!-- 镜像元数据显示区域 -->
+                <div id="image-metadata-container" class="mt-2 px-3 py-2" style="display:none; background-color: #fafafa; border-radius: 4px;">
+                    <div id="image-metadata-content"></div>
                 </div>
             </div>
             

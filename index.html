@@ -70,7 +70,7 @@
                 // Get namespace for extracting pods data
                 api.get('/me').then(response => {
                     namespace = response.username;
-                    console.log('Namespace fetched:', namespace);
+                    // console.log('Namespace fetched:', namespace);
                 });
                 // Get jobs
                 api.get('/me/jobs').then(response => {
@@ -84,34 +84,33 @@
                             pod_ids: job.pods.map(pod => pod.pod_id),
                             pods: []
                         }));
-                        console.log('Jobs fetched:', jobs);
+                        // console.log('Jobs fetched:', jobs);
 
                         // Get pods data
                         return api.get('/me/pods')
                             .then(podsResponse => {
                                 pods = podsResponse[namespace];
-                                console.log('Pods fetched:', pods);
+                                // console.log('Pods fetched:', pods);
                             });
                 })
                 .then(() => {
-                        // Match detailed pod data to their jobs
-                        jobs.forEach(job => {
-                            job.pods = [];
-                            job.pod_ids.forEach(pod_id => {
-                                idx = job.pod_ids.length;
-                                for (let i = 0; i < pods.length; i++) {
-                                    // maybe have corner case, need to be further checked
-                                    const pod = pods[i];
-                                    if (pod["Container Name"] === pod_id) {
-                                        idx = idx - 1;
-                                        pod.gpu_type = job.gpu_type[idx];
-                                        job.pods.push(pod);
-                                        if (idx === 0) break;
-                                    }
-                                }
-                            });
+                        // Create a map of pod IDs to pod data for faster lookup
+                        const podMap = new Map();
+                        pods.forEach(pod => {
+                            podMap.set(pod["Container Name"], pod);
                         });
-                        console.log('Pods matched to jobs:', jobs);
+
+                        // Match detailed pod data to their jobs using the map
+                        jobs.forEach(job => {
+                            job.pods = job.pod_ids.map((podId, index) => {
+                                const pod = podMap.get(podId);
+                                if (pod) {
+                                    pod.gpu_type = job.gpu_type[index];
+                                    return pod;
+                                }
+                            }).filter(Boolean);
+                        });
+                        // console.log('Pods matched to jobs:', jobs);
 
                         // Sort by start time
                         jobs.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
@@ -120,7 +119,7 @@
                         jobCardsContainer.innerHTML = '';
                         jobs.forEach(job => {
                             if (job.pods && job.pods.length > 0) {
-                                console.log("job", job);
+                                // console.log("job", job);
                                 const jobCard = createJobCard(job);
                                 jobCardsContainer.appendChild(jobCard);
                             }
@@ -147,7 +146,7 @@
                     // const gpu_type = job.gpu_type;
                     const containers = job.pods;
                     const image = containers[0]["Image"];
-                    console.log("containers", containers);
+                    // console.log("containers", containers);
 
                     // total GPUs for job card
                     let totalGPU = 0;
@@ -183,17 +182,19 @@
                                         <span>Info</span>
                                     </div>
                                     <div class="job-action-button copy" onclick="event.stopPropagation(); cloneJob('${jobName}')">
-                                        <i class="fa-regular fa-clone"></i>
+                                        <i class="fa-solid fa-clone"></i>
                                         <span>Clone</span>
                                     </div>
-                                    <div class="job-action-button stop" onclick="event.stopPropagation(); stopJob('${jobName}', '${namespace}', '${jobContainerId}')">
-                                        <i class="fa-solid fa-stop"></i>
-                                        <span>Stop</span>
-                                    </div>
-                                    <div class="job-action-button danger" onclick="event.stopPropagation(); deleteJob('${jobName}', '${namespace}', '${jobContainerId}')">
+                                    ${status === 'Running' ? `
+                                        <div class="job-action-button stop" onclick="event.stopPropagation(); stopJob('${jobName}', '${namespace}', '${jobContainerId}')">
+                                            <i class="fa-solid fa-stop"></i>
+                                            <span>Stop</span>
+                                        </div>
+                                    ` : ''}
+                                    <!-- <div class="job-action-button danger" onclick="event.stopPropagation(); deleteJob('${jobName}', '${namespace}', '${jobContainerId}')">
                                         <i class="fa-regular fa-trash-alt"></i>
-                                        <span>Delete</span>
-                                    </div>
+                                            <span>Delete</span>
+                                    </div> -->
                                 </div>
                             </div>
                             <div class="job-meta">
@@ -216,64 +217,63 @@
                             </div>
                         </div>
                         <div id="${jobId}" class="job-containers" style="display: none;">
-                            <div class="table-container">
-                                <table id="${tableId}" class="table is-fullwidth container-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Container ID</th>
-                                            <th>Container Name</th>
-                                            <th>GPU</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${containers.map(container => {
-                                            // console.log(container);
-                                            const containerStatusClass = getStatusClass(container["Status"]);
-                                            return `
-                                                <tr>
-                                                    <td>
-                                                        <div>
-                                                            <div>
-                                                                <span class="status-badge ${containerStatusClass}">${container["Status"]}</span>
-                                                                <span>${container["Container ID"]}</span>
+                            <div class="container-list">
+                                <div class="container-list-header">
+                                    <div class="container-header-id">Container ID</div>
+                                    <div class="container-header-name">Container Name</div>
+                                    <div class="container-header-gpu">GPU</div>
+                                    <div class="container-header-actions">Actions</div>
+                                </div>
+                                ${containers.map(container => {
+                                    const containerStatusClass = getStatusClass(container["Status"]);
+                                    return `
+                                        <div class="container-list-item">
+                                            <div class="container-item-id">
+                                                <div class="horizontal-content">
+                                                    <span class="status-badge ${containerStatusClass}">${container["Status"]}</span>
+                                                    <span class="container-id-text">${container["Container ID"]}</span>
+                                                </div>
+                                            </div>
+                                            <div class="container-item-name">${container["Container Name"]}</div>
+                                            <div class="container-item-gpu">
+                                                <div class="horizontal-content">
+                                                    <span>${container["gpu_type"]}</span>
+                                                    <span class="info-icon" data-info="GPU Request: ${container["GPU Request"]}, GPU Limit: ${container["GPU Limit"]}, CPU Request: ${container["CPU Request"]}, Memory Request: ${container["Memory Request"]}"></span>
+                                                </div>
+                                            </div>
+                                            <div class="container-item-actions">
+                                                <div class="actions-container">
+                                                    <div class="actions">
+                                                        ${container["Status"] === 'Completed' ? `
+                                                            <div class="action-item" onclick="showContainerLog('${container["Namespace"]}', '${container["Container Name"]}')">
+                                                                <i class="fa-regular fa-file"></i>
+                                                                <span>Output</span>
                                                             </div>
-                                                        </div>
-                                                    </td>
-                                                    <td>${container["Container Name"]}</td>
-                                                    <td>
-                                                        <div>
-                                                            <span>${container["gpu_type"]}</span>
-                                                            <span class="info-icon" data-info="GPU Request: ${container["GPU Request"]}, GPU Limit: ${container["GPU Limit"]}, CPU Request: ${container["CPU Request"]}, Memory Request: ${container["Memory Request"]}">i</span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <div class="actions-container">
-                                                            <div class="actions">
-                                                                <div class="action-item" onclick="editContainer('${container["Pod IP"]}', '${container["Container Name"]}', '${container["Status"]}')">
-                                                                    <i class="fa-regular fa-pen-to-square"></i>
-                                                                    <span>Port</span>
-                                                                </div>
-                                                                <div class="action-item" onclick="showContainerLog('${container["Namespace"]}', '${container["Container Name"]}')">
-                                                                    <i class="fa-solid fa-file-alt"></i>
-                                                                    <span>Output</span>
-                                                                </div>
-                                                                <div class="action-item" onclick="showSshCommand('${container["Pod IP"]}', '${container["SSH Port"]}')">
-                                                                    <i class="fa-solid fa-link"></i>
-                                                                    <span>SSH</span>
-                                                                </div>
-                                                                <div class="action-item" onclick="connectSsh('${container["SSH Port"]}')">
-                                                                    <i class="fa-solid fa-terminal"></i>
-                                                                    <span>Terminal</span>
-                                                                </div>
+                                                        ` : ''}
+                                                        ${container["Status"] === 'Running' ? `
+                                                        <div class="action-item" onclick="editContainer('${container["Pod IP"]}', '${container["Container Name"]}', '${container["Status"]}')">
+                                                            <i class="pencil-icon"></i>
+                                                                <span>Port</span>
                                                             </div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            `;
-                                        }).join('')}
-                                    </tbody>
-                                </table>
+                                                        ` : ''}
+                                                        ${container["Status"] === 'Running' ? `
+                                                            <div class="action-item" onclick="showSshCommand('${container["SSH Port"]}')">
+                                                                <i class="link-icon"></i>
+                                                                <span>SSH</span>
+                                                            </div>
+                                                        ` : ''}
+                                                        ${container["Status"] === 'Running' ? `
+                                                            <div class="action-item" onclick="connectSsh('${container["SSH Port"]}')">
+                                                                <i class="terminal-icon"></i>
+                                                                <span>Terminal</span>
+                                                            </div>
+                                                        ` : ''}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
                             </div>
                         </div>
                     `;
@@ -284,31 +284,8 @@
 
             // Container table
             function fetchPodInfo() {            
-                // datatables for containers
-                setTimeout(() => {
-                    document.querySelectorAll('.container-table').forEach(table => {
-                        jQuery(table).DataTable({
-                            paging: true,
-                            searching: true,
-                            ordering: true,
-                            info: true,
-                            pageLength: 5,
-                            lengthMenu: [5, 10, 25, 50],
-                            autoWidth: true,
-                            responsive: true,
-                            columnDefs: [
-                                { width: "25%", targets: 0 },
-                                { width: "25%", targets: 1 },
-                                { width: "15%", targets: 2 },
-                                { width: "35%", targets: 3, responsivePriority: 1 }
-                            ],
-                            language: {
-                                search: "",
-                                searchPlaceholder: "Search containers..."
-                            }
-                        });
-                    });
-                }, 100);
+                // No longer need DataTable initialization since we're using divs
+                // Container styling is handled by CSS
             }
                     
             // Toggle container tables
@@ -324,13 +301,7 @@
                         expandIcon.className = isVisible ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-up';
                     }
                     
-                    if (!isVisible) {
-                        const tableId = `table-${jobId}`;
-                        const table = jQuery(`#${tableId}`).DataTable();
-                        if (table) {
-                            table.columns.adjust().draw();
-                        }
-                    }
+                    // No need for table adjustment as we're using divs
                 }
             };
                     
@@ -356,20 +327,22 @@
             };
                     
             // show ssh command
-            window.showSshCommand = function(podIp, sshPort) {
+            window.showSshCommand = function(sshPort) {
                 // if sshPort is not available, return
                 if (sshPort === 'N/A') {
                     alert('SSH port is not available.');
                     return;
                 }
-                showSshCommandModal(podIp, sshPort);
+                showSshCommandModal(sshPort);
             };
             
             // connect in web
             window.connectSsh = function(sshPort) {
+                console.log("sshPort", sshPort);
                 if (sshPort !== 'N/A') {
                     api.post('/connect-ssh', { port: sshPort })
                     .then(data => {
+                        console.log("data", data);
                         if (data.success) {
                             window.location.href = `/ssh.html?session_id=${data.session_id}`;
                         } else {
@@ -535,7 +508,7 @@
                                         switch (key) {
                                             case "Action":
                                                 return $.create("div", {
-                                                    className: "actions",
+                                                    className: "port-mapping-actions",
                                                     contents: [
                                                         {
                                                             tag: "div",
@@ -656,7 +629,7 @@
             }
 
             // show SSH command modal
-            function showSshCommandModal(podIp, sshPort) {
+            function showSshCommandModal(sshPort) {
                 let modal = document.getElementById('ssh-command-modal');
                 if (!modal) {
                     modal = document.createElement('div');
@@ -696,7 +669,7 @@
                 }
                 
                 // Set SSH command
-                const sshCommand = `ssh root@${podIp} -p ${sshPort}`;
+                const sshCommand = `ssh root@gw.tacc.ust.hk -p ${sshPort}`;
                 document.getElementById('ssh-command').value = sshCommand;
                 
                 // Show the modal
@@ -705,7 +678,7 @@
 
             // job/container status class
             function getStatusClass(status) {
-                console.log("status", status);
+                // console.log("status", status);
                 status = status.toLowerCase();
                 if (status === 'running') return 'status-running';
                 if (status === 'pending' || status === 'containercreating' || status === 'podinitialized') return 'status-pending';

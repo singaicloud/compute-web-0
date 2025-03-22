@@ -11,7 +11,11 @@
   font-weight: 600;
   src: url("openai-500.otf");
 }
-body, html {
+html {
+  height: 100%;
+  overflow-y: hidden;
+}
+body {
   font-family: "OpenAI", sans-serif !important;
   font-size: 16px;
   color: #080808;
@@ -25,6 +29,7 @@ body, html {
   min-width: 300px;
   overflow-x: hidden;
   overflow-y: scroll;
+  height: 100%;
   text-rendering: optimizeLegibility;
 }
 input, select, textarea {
@@ -561,12 +566,12 @@ a:hover {
   align-items: center;
   justify-content: flex-start;
   padding: 0.65rem 0.65rem;
-  border-radius: 10px;
+  border-radius: 50px;
   font-size: 0.85rem;
   font-weight: 500;
   white-space: nowrap;
   line-height: 1.2;
-  height: 20px;
+  height: 26px;
   background-color: transparent;
   border-width: 1.5px;
   gap: 0.5rem;
@@ -574,58 +579,58 @@ a:hover {
 
 .status-running {
   color: #0d8921;
-  border: 1.5px solid #0d8921;
-  /* background-color: rgba(13, 137, 33, 0.05); */
+  background-color: #0d892116;
+}
+
+.job-card:has(.status-running) {
+  border-left: 4px solid #0d8921;
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
 }
 
 .status-pending, .status-containercreating, .status-podinitialized {
   color: #b76e00;
-  border: 1.5px solid #b76e00;
   /* background-color: rgba(183, 110, 0, 0.05); */
 }
 
 .status-failed, .status-error, .status-crashloopbackoff {
   color: #c62828;
-  border: 1.5px solid #c62828;
   /* background-color: rgba(198, 40, 40, 0.05); */
 }
 
 .status-completed, .status-succeeded {
   color: #1967d2;
-  border: 1.5px solid #1967d2;
-  /* background-color: rgba(25, 103, 210, 0.05); */
+  background-color: #1967d216;
 }
 
 .status-unknown, .status-na {
   color: #757575;
-  border: 1.5px solid #757575;
   /* background-color: rgba(117, 117, 117, 0.05); */
 }
 
 /* Job Card Styles */
 .job-card {
   margin-bottom: 0.5rem;
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: none;
-  border: 1px solid #e8e8e8;
+  border: 1px solid rgb(182, 182, 182);;
   overflow: hidden;
+  transition-duration: 0.5s;
+  transition-property: box-shadow, background-color;
+  padding: 1.5rem 1.25rem 1.5rem 1.25rem;
+  color: #080808!important;
 }
 
 .job-card:hover {
-  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+  background-color: #a8a8a80d;
+  box-shadow: #9c9c9c1a 0px 0px 5px 2px;
 }
 
 .job-card-header {
   display: flex;
   flex-direction: column;
-  padding: 1rem;
   cursor: pointer;
-  background-color: white;
   /* border-bottom: 1px solid #f0f0f0; */
-}
-
-.job-card-header:hover {
-  background-color: #fafafa;
 }
 
 .job-header-top {
@@ -644,16 +649,21 @@ a:hover {
   margin-bottom: 0.2rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1rem;
   flex: 1;
   min-width: 0;
   flex-wrap: wrap;
   justify-content: flex-start;
   text-align: left;
+  color: #080808;
 }
 
 .job-title .status-badge {
   margin-right: 8px;
+}
+
+.job-title .job-name {
+  word-spacing: 0.4px;
 }
 
 /* .expand-icon-container {
@@ -700,9 +710,8 @@ a:hover {
   border: 1px solid #e8e8e8;
   transition: none;
   overflow: hidden;
-  padding: 0.2rem 0.3rem;
   background-color: white;
-  margin-top: 0.5rem;
+  margin-top: 2rem;
 }
 
 /* Job Actions */
@@ -872,12 +881,16 @@ a:hover {
   font-size: 0.85rem;
 }
 
-.container-list-item:hover {
-  background-color: #fafafa;
-}
 
 .container-list-item:last-child {
   border-bottom: none;
+}
+
+.container-list-item .status-badge {
+  background-color: unset;
+  font-size: 0.9rem;
+  border: none;
+  font-weight: bold;
 }
 
 .container-header-id,

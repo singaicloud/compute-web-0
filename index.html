@@ -28,24 +28,17 @@
     <section class="section launchpad">
         <div class="container">
             <div class="options">
-                    <div class="option">
-                        <div class="image"><i class="fa-solid fa-book"></i></div>
-                        <div class="text">
-                            <a href="/launch-new.html"><div class="line1">Quick Launch</div></a>
-                            <div class="line2">Create a quick runtime as a notebook</div>
-                        </div>
-                    </div>
-                <div class="option">
+                <div class="option" onclick="window.location.href='/launch-new.html'">
                     <div class="image"><i class="fa-solid fa-list-check"></i></div>
                     <div class="text">
-                        <div class="line1">Launch</div>
-                        <div class="line2">Choose your runtime specifications</div>
+                        <div class="line1">Quick Launch</div>
+                        <div class="line2">Create a quick runtime as a notebook</div>
                     </div>
                 </div>
-                <div class="option">
+                <div class="option" onclick="window.location.href='/storage.html'">
                     <div class="image"><i class="fa-solid fa-database"></i></div>
                     <div class="text">
-                        <a href="/storage.html"><div class="line1">Manage Storage</div></a>
+                        <div class="line1">Manage Storage</div>
                         <div class="line2">Access your cloud storage for all jobs</div>
                     </div>
                 </div>
@@ -70,27 +63,26 @@
                 // Get namespace for extracting pods data
                 api.get('/me').then(response => {
                     namespace = response.username;
-                    // console.log('Namespace fetched:', namespace);
+                    console.log('Namespace fetched:', namespace);
                 });
                 // Get jobs
                 api.get('/me/jobs').then(response => {
                         // Map needed job data
                         jobs = response.map(job => ({
                             namespace: namespace,
-                            job_name: job.job_name,
+                            job_name: job.job_id,
                             status: job.status, 
                             start_time: job.start_time,
-                            gpu_type: job.pods.map(pod => pod.gpu_type),
-                            pod_ids: job.pods.map(pod => pod.pod_id),
+                            pod_ids: job.pods,
                             pods: []
                         }));
-                        // console.log('Jobs fetched:', jobs);
+                        console.log('Jobs fetched:', jobs);
 
                         // Get pods data
                         return api.get('/me/pods')
                             .then(podsResponse => {
                                 pods = podsResponse[namespace];
-                                // console.log('Pods fetched:', pods);
+                                console.log('Pods fetched:', pods);
                             });
                 })
                 .then(() => {
@@ -105,12 +97,21 @@
                             job.pods = job.pod_ids.map((podId, index) => {
                                 const pod = podMap.get(podId);
                                 if (pod) {
-                                    pod.gpu_type = job.gpu_type[index];
                                     return pod;
                                 }
                             }).filter(Boolean);
                         });
-                        // console.log('Pods matched to jobs:', jobs);
+                        // update status for each job and if there are pods running, the job status is running, otherwise we use the first pod status
+                        jobs.forEach(job => {
+                            if (job.pods.length === 0) {
+                                job.status = "NoPodFound";
+                            } else if (job.pods.some(pod => pod.Status === "Running")) {
+                                job.status = "Running";
+                            } else {
+                                job.status = job.pods[0].Status;
+                            }
+                        });
+                        // console.log('Jobs updated:', jobs);
 
                         // Sort by start time
                         jobs.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
@@ -134,7 +135,7 @@
             function createJobCard(job) {
                     // Job info in Job cards
                     const jobName = job.job_name;
-                    const status = job.status.charAt(0).toUpperCase() + job.status.slice(1);
+                    const status = job.status;
                     const start_time = job.start_time;
 
                     const statusClass = getStatusClass(status);
@@ -237,7 +238,7 @@
                                             <div class="container-item-name">${container["Container Name"]}</div>
                                             <div class="container-item-gpu">
                                                 <div class="horizontal-content">
-                                                    <span>${container["gpu_type"]}</span>
+                                                    <span>${container["GPU Type"]}</span>
                                                     <span class="info-icon" data-info="GPU Request: ${container["GPU Request"]}, GPU Limit: ${container["GPU Limit"]}, CPU Request: ${container["CPU Request"]}, Memory Request: ${container["Memory Request"]}"></span>
                                                 </div>
                                             </div>
@@ -678,7 +679,6 @@
 
             // job/container status class
             function getStatusClass(status) {
-                // console.log("status", status);
                 status = status.toLowerCase();
                 if (status === 'running') return 'status-running';
                 if (status === 'pending' || status === 'containercreating' || status === 'podinitialized') return 'status-pending';

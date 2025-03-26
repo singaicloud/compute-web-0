@@ -198,18 +198,26 @@
                             const gpuContainer = document.getElementById('gpu-options-container');
                             gpuContainer.innerHTML = '';
                             
-                            // Store GPU info for later use
                             window.gpuInfo = data.gpu_info || {};
                             
-                            if (data.gpu_info && data.gpu_info.summary) {
-                                Object.keys(data.gpu_info.summary).forEach(gpuType => {
-                                    const info = data.gpu_info.summary[gpuType];
+                            if (data.summary) {
+                                Object.keys(data.summary).forEach(gpuSku => {
+                                    const info = data.summary[gpuSku];
+                                    
+                                    let gpuName = gpuSku;
+                                    for (const nodeKey in data.gpu_info) {
+                                        if (data.gpu_info[nodeKey].gpu_sku === gpuSku) {
+                                            gpuName = data.gpu_info[nodeKey].gpu_name || gpuSku;
+                                            break;
+                                        }
+                                    }
+                                    
                                     const gpuButton = document.createElement('button');
                                     gpuButton.classList.add('button', 'gpu-option');
-                                    gpuButton.dataset.type = gpuType;
+                                    gpuButton.dataset.type = gpuSku;
                                     gpuButton.dataset.total = info.total;
                                     gpuButton.dataset.used = info.used;
-                                    gpuButton.textContent = `${gpuType} (${info.used}/${info.total})`;
+                                    gpuButton.textContent = `${gpuName} (${info.used}/${info.total})`;
                                     gpuButton.addEventListener('click', function() {
                                         console.log('GPU button click:', this.dataset.type);
                                         document.querySelectorAll('.gpu-option').forEach(btn => {
@@ -219,6 +227,8 @@
                                         this.classList.add('is-primary', 'is-selected');
                                         console.log('Added selection:', this.textContent);
                                         document.getElementById('gpu-type-input').value = this.dataset.type;
+                                        
+                                        document.getElementById('gpu-name-input').value = gpuName;
                                         
                                         setupGpuWorkerOptions(this.dataset.type, parseInt(this.dataset.total), parseInt(this.dataset.used));
                                     });
@@ -382,7 +392,7 @@
                                             <tr><td>Namespace:</td><td>${data.namespace}</td></tr>
                                             <tr><td>Job Name:</td><td>${data.job_name}</td></tr>
                                             <tr><td>Image:</td><td>${data.master_image}</td></tr>
-                                            <tr><td>GPU Type:</td><td>${data.gpu_type}</td></tr>
+                                            <tr><td>GPU Type:</td><td>${document.getElementById('gpu-name-input').value || data.gpu_type}</td></tr>
                                             <tr><td>GPU Count:</td><td>${data.gpu_limit}</td></tr>
                                             <tr><td>Worker Count:</td><td>${data.worker_replicas}</td></tr>
                                             <tr><td>CPU Limit:</td><td>${data.cpu_limit} cores</td></tr>
@@ -560,6 +570,7 @@
                     <div class="control">
                         <div id="gpu-options-container" class="buttons"></div>
                         <input type="hidden" id="gpu-type-input" name="gpu_type" value="RTX3090">
+                        <input type="hidden" id="gpu-name-input" name="gpu_name" value="">
                     </div>
                 </div>
                 

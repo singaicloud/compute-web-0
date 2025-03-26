@@ -11,8 +11,10 @@ export class Navigation extends LitElement {
             position: sticky;
             top: 0;
             backdrop-filter: saturate(180%) blur(20px);
-            background-color: rgba(255, 255, 255, 0.72);
-            border-bottom: 1px solid rgb(243, 244, 246);
+            background-color: rgba(255, 255, 255, 0.95);
+            /* border-bottom: 1px solid rgb(243, 244, 246); */
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 8px 10px rgba(0, 0, 0, 0.03);
+            padding: 4px 0;
         }
         .menubar .container {
             justify-content: space-between;
@@ -36,6 +38,13 @@ export class Navigation extends LitElement {
         .menubar .item {
             font-size: 0.95rem;
             font-weight: 400;
+        }
+        .menubar .item :hover {
+            color: var(--brand-color);
+            border-bottom: none;
+            font-weight: 500;
+            text-decoration: underline 0.8px;
+            text-underline-offset: 3.5px;
         }
         @media screen and (max-width: 767px){
             .menubar .logo {

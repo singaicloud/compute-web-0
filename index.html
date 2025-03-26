@@ -186,10 +186,12 @@
                                         <i class="fa-solid fa-info-circle"></i>
                                         <span>Info</span>
                                     </div>
-                                    <div class="job-action-button copy" onclick="event.stopPropagation(); cloneJob('${jobName}')">
-                                        <i class="fa-solid fa-clone"></i>
-                                        <span>Clone</span>
-                                    </div>
+                                    ${status == 'Running' || status == 'Completed' ? `
+                                        <div class="job-action-button copy" onclick="event.stopPropagation(); cloneJob('${jobName}')">
+                                            <i class="fa-solid fa-clone"></i>
+                                            <span>Clone</span>
+                                        </div>
+                                    ` : ''}
                                     ${status === 'Running' ? `
                                         <div class="job-action-button stop" onclick="event.stopPropagation(); stopJob('${jobName}', '${namespace}', '${jobContainerId}')">
                                             <i class="fa-solid fa-stop"></i>

@@ -328,7 +328,7 @@
         }
 
         function fetchImageInfo() {
-            api.get(`/me/image-info`)
+            api.get(`/me/images`)
                 .then(data => {
                     const publicTableBody = document.querySelector('#publicImageTableBody');
                     const privateTableBody = document.querySelector('#privateImageTableBody');
@@ -337,46 +337,39 @@
                     privateTableBody.innerHTML = ''; // Clear existing data
 
                     // Traverse all repositories dynamically
-                    for (const [repository, images] of Object.entries(data.images)) {
-                        const isPublic = repository.includes('public') || repository.includes('10.100.100.1:5000');
+                    for (const image of data.images) {
+                        const isPublic = image.registry_host.includes('public') || image.registry_host.includes('10.100.100.1:5000');
                         const tableBody = isPublic ? publicTableBody : privateTableBody;
                         
-                        for (const [imageName, imageTags] of Object.entries(images)) {
-                            imageTags.forEach(tagData => {
-                                const row = document.createElement('tr');
-
-                                // Format data size
-                                const size = formatSize(tagData.size);
-                                
-                                if (isPublic) {
-                                    row.innerHTML = `
-                                        <td>${repository}</td>
-                                        <td>${imageName}</td>
-                                        <td>${tagData.tag}</td>
-                                        <td>${size}</td>
-                                        <td>${new Date(tagData.created_at || tagData.inserted_at).toLocaleString()}</td>
-                                        <td><a href="#" class="view-button" onclick="showDetails('${encodeURIComponent(JSON.stringify(tagData))}')"><i class="fas fa-circle-info"></i> View</a></td>
-                                        <td><a href="#" class="create-from-label" data-repository="${repository}" data-image="${imageName}" data-tag="${tagData.tag}" data-details='${encodeURIComponent(JSON.stringify(tagData))}'><i class="fas fa-square-plus"></i>Create from</a></td>
-                                        <td><span class="label-badge"><i class="fas fa-tag mr-1"></i>Models</span></td>
-                                    `;
-                                } else {
-                                    // Determine source (Tar file, Google Cloud, etc.)
-                                    const source = determineSource(tagData);
-                                    row.innerHTML = `
-                                        <td>${source}</td>
-                                        <td>${imageName}</td>
-                                        <td>${tagData.tag}</td>
-                                        <td>${size}</td>
-                                        <td>${new Date(tagData.created_at || tagData.inserted_at).toLocaleString()}</td>
-                                        <td><a href="#" class="view-button" onclick="showDetails('${encodeURIComponent(JSON.stringify(tagData))}')"><i class="fas fa-circle-info"></i> View</a></td>
-                                        <td><a href="#" class="create-from-label" data-repository="${repository}" data-image="${imageName}" data-tag="${tagData.tag}" data-details='${encodeURIComponent(JSON.stringify(tagData))}'><i class="fas fa-square-plus"></i>Create from</a></td>
-                                        <td><span class="label-badge"><i class="fas fa-tag mr-1"></i>Models</span></td>
-                                    `;
-                                }
-
-                                tableBody.appendChild(row);
-                            });
+                        const row = document.createElement('tr');
+                        const size = formatSize(image.size);
+                        
+                        if (isPublic) {
+                            row.innerHTML = `
+                                <td>${image.registry_host}</td>
+                                <td>${image.name}</td>
+                                <td>${image.tag}</td>
+                                <td>${size}</td>
+                                <td>${new Date(image.created_at || image.inserted_at).toLocaleString()}</td>
+                                <td><a href="#" class="view-button" onclick="showDetails('${encodeURIComponent(JSON.stringify(image))}')"><i class="fas fa-circle-info"></i> View</a></td>
+                                <td><a href="#" class="create-from-label" data-repository="${image.registry_host}" data-image="${image.name}" data-tag="${image.tag}" data-details='${encodeURIComponent(JSON.stringify(image))}'><i class="fas fa-square-plus"></i>Create from</a></td>
+                                <td><span class="label-badge"><i class="fas fa-tag mr-1"></i>Models</span></td>
+                            `;
+                        } else {
+                            // Determine source (Tar file, Google Cloud, etc.)
+                            const source = determineSource(image);
+                            row.innerHTML = `
+                                <td>${source}</td>
+                                <td>${image.name}</td>
+                                <td>${image.tag}</td>
+                                <td>${size}</td>
+                                <td>${new Date(image.created_at || image.inserted_at).toLocaleString()}</td>
+                                <td><a href="#" class="view-button" onclick="showDetails('${encodeURIComponent(JSON.stringify(image))}')"><i class="fas fa-circle-info"></i> View</a></td>
+                                <td><a href="#" class="create-from-label" data-repository="${image.registry_host}" data-image="${image.name}" data-tag="${image.tag}" data-details='${encodeURIComponent(JSON.stringify(image))}'><i class="fas fa-square-plus"></i>Create from</a></td>
+                                <td><span class="label-badge"><i class="fas fa-tag mr-1"></i>Models</span></td>
+                            `;
                         }
+                        tableBody.appendChild(row);
                     }
                     
                     // "Create from" buttons
@@ -395,8 +388,8 @@
                                 if (tagData.default_entrypoint) {
                                     url += `&entrypoint=${encodeURIComponent(tagData.default_entrypoint)}`;
                                 }
-                                if (tagData.default_ports) {
-                                    url += `&ports=${encodeURIComponent(JSON.stringify(tagData.default_ports))}`;
+                                if (tagData.default_port) {
+                                    url += `&ports=${encodeURIComponent(tagData.default_port)}`;
                                 }
                                 // Navigate to the launch-new page
                                 window.location.href = url;
@@ -442,21 +435,13 @@
             //         ([key, value]) => `<li><strong>${key}:</strong> ${value}</li>`
             //     ).join('') : '<li>No labels available</li>';
             
-            // Format ports if available
-            const portsDisplay = details.default_ports ? 
-                Object.entries(details.default_ports).map(
-                    ([port, target]) => `${port} → ${target}`
-                ).join('<br>') : 'Not specified';
+            // show default port if available
+            const portsDisplay = details.default_port ? 
+                `${details.default_port}` : 'Not specified';
             
-            // Format entrypoint if available - could be string or array
-            let entrypointDisplay = 'Not specified';
-            if (details.default_entrypoint) {
-                if (Array.isArray(details.default_entrypoint)) {
-                    entrypointDisplay = details.default_entrypoint.join(' ');
-                } else {
-                    entrypointDisplay = details.default_entrypoint;
-                }
-            }
+            // show default entrypoint if available
+            const entrypointDisplay = details.default_entrypoint ? 
+                `${details.default_entrypoint}` : 'Not specified';
 
             const detailContent = `
                 <div class="field">
@@ -481,6 +466,12 @@
                     <label class="label"><i class="fas fa-display mr-2"></i>OS</label>
                     <div class="control">
                         <p>${details.os || 'Not available'}</p>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label"><i class="fas fa-cogs mr-2"></i>Recommended Configuration</label>
+                    <div class="control">
+                        <p>${details.recommended_configuration || 'Not available'}</p>
                     </div>
                 </div>
                 <div class="field">

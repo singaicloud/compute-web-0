@@ -409,13 +409,13 @@
                         // Pre-fill ports
                         if (ports) {
                             try {
-                                const portsObj = JSON.parse(ports);
+                                //const portsObj = JSON.parse(ports);
                                 // Format ports for the input field (comma-separated)
-                                if (typeof portsObj === 'object') {
-                                    const portsList = Object.keys(portsObj).join(',');
-                                    document.querySelector('.exposed-port').value = portsList;
-                                    console.log(`Pre-filled ports: ${portsList}`);
-                                }
+                                //if (typeof portsObj === 'object') {
+                                    //const portsList = Object.keys(portsObj).join(',');
+                                    document.querySelector('.exposed-port').value = ports;
+                                    console.log(`Pre-filled ports: ${ports}`);
+                                //}
                             } catch (e) {
                                 console.error("Error parsing ports JSON:", e);
                             }

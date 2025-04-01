@@ -18,20 +18,373 @@
     <!-- Launch page specific styles -->
     <link href="assets/launch-styles.css" rel="stylesheet">
     
+    <style>
+        /* 共享样式 */
+        body {
+            font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #333;
+            line-height: 1.5;
+        }
+        
+        /* 镜像元数据显示样式 */
+        #image-metadata-container {
+            background-color: #f9f9fc;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            margin-top: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            transition: all 0.3s ease;
+        }
+        
+        pre.metadata-text {
+            font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+            background: none;
+            padding: 0;
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #3c4257;
+            white-space: pre-wrap;
+        }
+        
+        pre.metadata-text strong {
+            color: #2563eb;
+            font-weight: 600;
+        }
+        
+        /* 增强第一行（标题）显示效果 */
+        pre.metadata-text::first-line {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1a202c;
+        }
+        
+        /* 为每个部分添加一些间距 */
+        pre.metadata-text {
+            display: grid;
+            grid-row-gap: 4px;
+        }
+
+        /* 添加更详细的样式控制 */
+        .metadata-item {
+            margin-bottom: 6px;
+            display: flex;
+            align-items: baseline;
+        }
+        .metadata-label {
+            font-weight: 500;
+            color: #4a5568;
+            width: 200px;
+            flex-shrink: 0;
+        }
+        .metadata-value {
+            color: #2d3748;
+        }
+        .metadata-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 12px;
+        }
+        .metadata-scenarios span {
+            display: inline-block;
+            background-color: #ebf4ff;
+            color: #3182ce;
+            padding: 0px 8px;
+            border-radius: 4px;
+            margin-right: 6px;
+            margin-bottom: 4px;
+            font-size: 0.85rem;
+        }
+        
+        /* 资源匹配分析样式 */
+        .match-status {
+            display: inline-flex;
+            align-items: center;
+            font-weight: 500;
+            margin-left: 2px;
+            margin-right: 2px;
+            padding: 0 3px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            white-space: nowrap;
+            vertical-align: text-top;
+            line-height: 1.2;
+            position: relative;
+            top: -6px;
+            right: -1px;
+        }
+        
+        .match-status.good {
+            background-color: rgba(72, 187, 120, 0.2);
+            color: #2f855a;
+            position: relative;
+            display: inline-flex;
+            top: -1px;
+            right: 0;
+            font-size: 0.65rem;
+            padding: 0 3px;
+            z-index: 20;
+        }
+        
+        .match-status.poor {
+            background-color: rgba(245, 101, 101, 0.2);
+            color: #c53030;
+            white-space: normal;
+            width: 30px;
+            text-align: center;
+            line-height: 1.1;
+            padding: 2px 3px;
+            position: absolute;
+            top: 50%;
+            left: -40px;
+            font-size: 0.5rem;
+            z-index: 10;
+            transform: translateY(-50%);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .match-status.poor::after {
+            content: "Req.";
+            display: block;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            border-radius: 4px;
+        }
+        
+        .progress-bar.memory {
+            background-color: #4299e1;
+        }
+        
+        .progress-bar.gpu {
+            background-color: #9f7aea;
+        }
+        
+        .usage-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #718096;
+            margin-top: 4px;
+        }
+        
+        .resource-match-item {
+            margin-bottom: 16px;
+        }
+        
+        .resource-match-label {
+            font-weight: 500;
+            color: #4a5568;
+        }
+        
+        .resource-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            position: relative;
+        }
+        
+        .resource-item .resource-value {
+            font-weight: 500;
+            color: #363636;
+            margin-right: auto;
+            position: relative;
+            min-height: 24px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .resource-item .icon-text {
+            display: flex;
+            align-items: center;
+            min-width: 120px;
+        }
+        
+        .resource-value {
+            position: relative;
+            padding-top: 8px;
+        }
+    </style>
+    
     <!-- Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/99d5980073.js" crossorigin="anonymous"></script>
+
+    <!-- Markdown parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <sing-navigation></sing-navigation>
     
     <section class="section form"> 
         <script>
-            const userHash = 'demo-project';
             document.addEventListener('DOMContentLoaded', function(){
+                console.log("页面加载完成，开始初始化...");
+                
+                // 设置marked解析选项
+                marked.setOptions({
+                    gfm: true,
+                    breaks: true,
+                    sanitize: false,
+                    smartLists: true
+                });
+                
+                // 获取元数据容器，确保一开始是隐藏的
+                const metadataContainer = document.getElementById('image-metadata-container');
+                console.log("初始化时元数据容器:", metadataContainer);
+                
+                if (metadataContainer) {
+                    metadataContainer.style.display = 'none';
+                    console.log("已隐藏元数据容器");
+                } else {
+                    console.error("找不到元数据容器，请检查HTML结构");
+                }
+                
+                // 检查元数据内容容器
+                const metadataContent = document.getElementById('image-metadata-content');
+                console.log("初始化时元数据内容容器:", metadataContent);
+                if (!metadataContent) {
+                    console.error("找不到元数据内容容器，请检查HTML结构");
+                }
+                
                 let username = 'default';
+                
+                // 获取友好的模型名称显示
+                function getDisplayModelName(imageName) {
+                    // 特殊情况处理
+                    if (imageName === 'codellama-7b') return 'CodeLlama-7B';
+                    if (imageName === 'deepseek-7b-v1') return 'DeepSeek-7B-v1';
+                    if (imageName === 'deepseek-7b') return 'DeepSeek-7B';
+                    if (imageName === 'llama2-7b') return 'Llama2-7B';
+                    if (imageName === 'qwen-7b') return 'Qwen-7B';
+                    if (imageName === 'nginx') return 'Nginx';
+                    if (imageName === 'ollama-base') return 'Ollama-base';
+                    if (imageName === 'pytorch-dist-mnist-test') return 'PyTorch-dist-mnist-test';
+                    if (imageName === 'pytorch-env-without-job-ssh') return 'PyTorch-env-without-job-ssh';
+                    
+                    // 对于其他名称，执行通用格式化
+                    return imageName.split('-').map(part => {
+                        // 处理数字后缀，如7b变成7B
+                        if (/^\d+[a-z]$/.test(part)) {
+                            return part.slice(0, -1) + part.slice(-1).toUpperCase();
+                        }
+                        // 首字母大写
+                        return part.charAt(0).toUpperCase() + part.slice(1);
+                    }).join('-');
+                }
+                
+                // 添加图像元数据显示的函数
+                function handleImageChange() {
+                    const selectedImage = document.querySelector('select[name="master_image"]').value;
+                    const metadataContent = document.getElementById('image-metadata-content');
+                    const metadataContainer = document.getElementById('image-metadata-container');
+                    
+                    console.log("handleImageChange被触发", selectedImage);
+                    
+                    if (!selectedImage) {
+                        console.log("未选择镜像，隐藏元数据");
+                        if (metadataContent) metadataContent.innerHTML = '';
+                        if (metadataContainer) metadataContainer.style.display = 'none';
+                        return;
+                    }
+                    
+                    console.log(`镜像选择变化: ${selectedImage}`);
+                    
+                    // 从当前所有镜像数据中找到选中的镜像
+                    const selectedImageObj = window.imagesData.images.find(img => img.full_name === selectedImage);
+                    console.log("找到的镜像对象:", selectedImageObj);
+                    
+                    // 检查是否存在所需的元数据
+                    const hasMetadata = selectedImageObj && (
+                        selectedImageObj.description ||
+                        selectedImageObj.applicable_scenarios ||
+                        selectedImageObj.recommended_configuration ||
+                        selectedImageObj.github_repo
+                    );
+                    
+                    if (!hasMetadata) {
+                        // 没有所需的元数据信息，隐藏元数据区域
+                        console.log("镜像没有所需的元数据，隐藏元数据区域");
+                        if (metadataContainer) metadataContainer.style.display = 'none';
+                        return;
+                    }
+                    
+                    if (selectedImageObj) {
+                        // 从后端获取的元数据，保持大小模型名称展示方式不变
+                        const displayName = getDisplayModelName(selectedImageObj.name);
+                        
+                        // 构建元数据HTML
+                        let metadataHTML = `
+                            <div class="metadata-title">${displayName}</div>`;
+                        
+                        // 只有在有描述信息时添加
+                        if (selectedImageObj.description) {
+                            metadataHTML += `
+                            <div class="metadata-item">
+                                <div class="metadata-label">Description:</div>
+                                <div class="metadata-value">${selectedImageObj.description}</div>
+                            </div>`;
+                        }
+                        
+                        // 只有在有场景信息时添加
+                        if (selectedImageObj.applicable_scenarios) {
+                            metadataHTML += `
+                            <div class="metadata-item">
+                                <div class="metadata-label">Applicable scenarios:</div>
+                                <div class="metadata-value">${selectedImageObj.applicable_scenarios}</div>
+                            </div>`;
+                        }
+                        
+                        // 只有在有推荐配置时添加
+                        if (selectedImageObj.recommended_configuration) {
+                            metadataHTML += `
+                            <div class="metadata-item">
+                                <div class="metadata-label">Recommended configuration:</div>
+                                <div class="metadata-value">${selectedImageObj.recommended_configuration}</div>
+                            </div>`;
+                        }
+                        
+                        // 只有在有GitHub仓库链接时添加（新增）
+                        if (selectedImageObj.github_repo) {
+                            metadataHTML += `
+                            <div class="metadata-item">
+                                <div class="metadata-label">GitHub repository:</div>
+                                <div class="metadata-value">
+                                    <a href="${selectedImageObj.github_repo}" target="_blank">${selectedImageObj.github_repo}</a>
+                                </div>
+                            </div>`;
+                        }
+                    
+                        // 更新元数据内容并显示
+                        metadataContent.innerHTML = metadataHTML;
+                        metadataContainer.style.display = 'block';
+                    } else {
+                        // 没有找到对应的镜像信息，隐藏元数据
+                        console.log(`未找到镜像 ${selectedImage} 的元数据`);
+                        if (metadataContainer) metadataContainer.style.display = 'none';
+                    }
+                }
                 
                 // Process URL parameters to prefill image name, entrypoint and ports
                 function processUrlParameters() {
@@ -82,78 +435,38 @@
                             console.error("Failed to fetch user info:", error);
                         });
                 }
-                function handleImageChange() {
-                    const selectedImage = document.querySelector('select[name="master_image"]').value;
-                    if (!selectedImage) {
-                        console.log("No image selected, keeping default settings");
-                        document.getElementById('image-metadata-container').style.display = 'none';
-                        return;
-                    }
-                    
-                    console.log(`Image selected: ${selectedImage}`);
-                    
-                    // 找到选中的image对象
-                    const selectedImageObj = window.imagesData?.images?.find(img => img.full_name === selectedImage);
-                    
-                    if (selectedImageObj) {
-                        // 显示元数据
-                        displayImageMetadata(selectedImageObj);
-                        
-                        // 自动填充默认端口
-                        if (selectedImageObj.default_ports) {
-                            document.querySelector('.exposed-port').value = selectedImageObj.default_ports;
-                        }
-                        
-                        // 如果有默认入口点，自动填充命令
-                        if (selectedImageObj.default_entrypoint) {
-                            document.querySelector('input[name="command"]').value = selectedImageObj.default_entrypoint;
-                        }
-                    } else {
-                        document.getElementById('image-metadata-container').style.display = 'none';
-                    }
-                }
-
-                // 显示镜像元数据
-                function displayImageMetadata(imageData) {
-                    const metadataContainer = document.getElementById('image-metadata-container');
-                    const metadataContent = document.getElementById('image-metadata-content');
-                    
-                    // 检查是否有元数据
-                    if (!imageData) {
-                        metadataContainer.style.display = 'none';
-                        return;
-                    }
-                    
-                    // 要显示的三个指定元数据字段
-                    const metadataFields = [
-                        { key: "description", label: "Description" },
-                        { key: "default_ports", label: "Default Ports" },
-                        { key: "default_entrypoint", label: "Default Entrypoint" }
-                    ];
-                    
-                    // 创建简洁的显示格式，无论是否有值都显示这三个字段
-                    let html = '';
-                    
-                    metadataFields.forEach(field => {
-                        const value = imageData[field.key] && imageData[field.key].toString().trim() !== '' ? 
-                            imageData[field.key] : '';
-                        
-                        html += `<div class="mb-1">
-                            <span class="has-text-grey is-size-7">${field.label}: </span>
-                            <span class="has-text-grey is-size-7">${value}</span>
-                        </div>`;
-                    });
-                    
-                    metadataContent.innerHTML = html;
-                    metadataContainer.style.display = 'block';
-                }
-
+                
                 // Fetch images from API and populate select box
                 function fetchImages() {
                     api.get(`/me/images`)
                         .then(data => {
+                            console.log("获取到的镜像数据:", data);
+                            
                             // 保存所有镜像数据以便后续使用
                             window.imagesData = data;
+                            
+                            // 添加自定义镜像元数据
+                            enhanceImagesWithMetadata(data.images);
+                            console.log("添加元数据后的镜像:", data.images.filter(img => img.description).map(img => `${img.full_name} (${img.description ? '有元数据' : '无元数据'})`));
+                            
+                            // 详细记录镜像的最小GPU内存要求
+                            console.log("镜像的最小GPU内存要求详情:", data.images.map(img => {
+                                let memoryValue = "未指定";
+                                if (img.minimum_gpu_memory !== undefined) {
+                                    if (typeof img.minimum_gpu_memory === 'number') {
+                                        memoryValue = `${img.minimum_gpu_memory} GB`;
+                                    } else if (typeof img.minimum_gpu_memory === 'string') {
+                                        memoryValue = `${img.minimum_gpu_memory} (字符串)`;
+                                    } else {
+                                        memoryValue = `存在但类型为 ${typeof img.minimum_gpu_memory}`;
+                                    }
+                                }
+                                return {
+                                    full_name: img.full_name,
+                                    name: img.name,
+                                    minimum_gpu_memory: memoryValue
+                                };
+                            }));
                             
                             var select = document.querySelector('select[name="master_image"]');
                             select.innerHTML = "";
@@ -161,7 +474,7 @@
                             data.images.forEach(image => {
                                 var option = document.createElement('option');
                                 option.value = image.full_name;
-                                option.textContent = image.full_name;
+                                option.textContent = image.full_name; // 恢复原始显示方式，显示完整镜像名称
                                 select.appendChild(option);
                             });
                             
@@ -182,13 +495,24 @@
                                 select.selectedIndex = 0;
                             }
                             
-                            handleImageChange();
-                            
+                            // 添加事件监听
+                            console.log("添加镜像选择事件监听");
                             select.addEventListener('change', handleImageChange);
+                            
+                            // 触发一次选择事件以显示默认选中镜像的元数据
+                            console.log("立即触发选择事件以显示元数据, 当前选中值:", select.value);
+                            handleImageChange();
                         })
                         .catch(error => {
                             console.error("Failed to fetch images:", error);
                         });
+                }
+                
+                // 增强镜像数据，添加自定义元数据
+                function enhanceImagesWithMetadata(images) {
+                    console.log("不再需要增强镜像元数据，直接使用后端API返回的数据");
+                    // 不再添加硬编码元数据，直接使用后端返回的数据
+                    return images;
                 }
                 
                 // Fetch available GPU information
@@ -200,15 +524,50 @@
                             
                             window.gpuInfo = data.gpu_info || {};
                             
+                            // 记录下GPU内存信息，用于日志
+                            const gpuMemoryInfo = {};
+                            for (const nodeKey in window.gpuInfo) {
+                                const nodeInfo = window.gpuInfo[nodeKey];
+                                const gpuSku = nodeInfo.gpu_sku;
+                                if (gpuSku && !gpuMemoryInfo[gpuSku]) {
+                                    gpuMemoryInfo[gpuSku] = {
+                                        gpu_memory_gb: nodeInfo.gpu_memory_gb,
+                                        sku: gpuSku
+                                    };
+                                    
+                                    // 如果没有直接提供 gpu_memory_gb，尝试从 SKU 提取
+                                    if (!nodeInfo.gpu_memory_gb) {
+                                        const match = gpuSku.match(/(\d+)G$/);
+                                        if (match) {
+                                            window.gpuInfo[nodeKey].gpu_memory_gb = parseInt(match[1]);
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            // 输出 GPU 内存信息到控制台
+                            console.log("GPU 内存信息:", gpuMemoryInfo);
+                            
                             if (data.summary) {
                                 Object.keys(data.summary).forEach(gpuSku => {
                                     const info = data.summary[gpuSku];
                                     
                                     let gpuName = gpuSku;
+                                    let gpuMemoryGb = 0;
+                                    
                                     for (const nodeKey in data.gpu_info) {
                                         if (data.gpu_info[nodeKey].gpu_sku === gpuSku) {
                                             gpuName = data.gpu_info[nodeKey].gpu_name || gpuSku;
+                                            gpuMemoryGb = data.gpu_info[nodeKey].gpu_memory_gb;
                                             break;
+                                        }
+                                    }
+                                    
+                                    // 如果没有内存信息，尝试从 SKU 提取
+                                    if (!gpuMemoryGb) {
+                                        const match = gpuSku.match(/(\d+)G$/);
+                                        if (match) {
+                                            gpuMemoryGb = parseInt(match[1]);
                                         }
                                     }
                                     
@@ -217,15 +576,23 @@
                                     gpuButton.dataset.type = gpuSku;
                                     gpuButton.dataset.total = info.total;
                                     gpuButton.dataset.used = info.used;
+                                    gpuButton.dataset.memory = gpuMemoryGb;
                                     gpuButton.textContent = `${gpuName} (${info.used}/${info.total})`;
+                                    
+                                    // If no available GPUs, disable button
+                                    const availableCount = info.total - info.used;
+                                    if (availableCount <= 0) {
+                                        gpuButton.disabled = true;
+                                        gpuButton.classList.add('is-light');
+                                        gpuButton.title = "No GPUs available";
+                                    }
+                                    
                                     gpuButton.addEventListener('click', function() {
-                                        console.log('GPU button click:', this.dataset.type);
+                                        console.log('GPU button click:', this.dataset.type, 'Memory:', this.dataset.memory);
                                         document.querySelectorAll('.gpu-option').forEach(btn => {
                                             btn.classList.remove('is-primary', 'is-selected');
-                                            console.log('Removed selection:', btn.textContent);
                                         });
                                         this.classList.add('is-primary', 'is-selected');
-                                        console.log('Added selection:', this.textContent);
                                         document.getElementById('gpu-type-input').value = this.dataset.type;
                                         
                                         document.getElementById('gpu-name-input').value = gpuName;
@@ -251,21 +618,36 @@
                     const availableGPUs = Math.max(0, totalGPUs - usedGPUs);
                     console.log(`Available GPUs (${gpuType}): ${availableGPUs}`);
                     
-                    // Define all possible options
-                    const allOptions = [
-                        {gpus: 1, workers: 1, label: '1 GPU × 1 Worker', minRequired: 1},
-                        {gpus: 1, workers: 2, label: '1 GPU × 2 Workers', minRequired: 2},
-                        {gpus: 1, workers: 4, label: '1 GPU × 4 Workers', minRequired: 4},
-                        {gpus: 1, workers: 8, label: '1 GPU × 8 Workers', minRequired: 8},
-                        {gpus: 2, workers: 2, label: '2 GPUs × 2 Workers', minRequired: 4},
-                        {gpus: 2, workers: 4, label: '2 GPUs × 4 Workers', minRequired: 8}
-                    ];
+                    // Define options based on GPU type
+                    let allOptions = [];
+                    
+                    // Configure options based on GPU type and availability
+                    if (gpuType === 'N309024G') { // RTX3090
+                        allOptions = [
+                            {gpus: 1, workers: 1, label: '1 GPU × 1 Worker', minRequired: 1},
+                            {gpus: 1, workers: 2, label: '1 GPU × 2 Workers', minRequired: 2},
+                            {gpus: 1, workers: 4, label: '1 GPU × 4 Workers', minRequired: 4},
+                            {gpus: 2, workers: 2, label: '2 GPUs × 2 Workers', minRequired: 4}
+                        ];
+                    } else if (gpuType === 'N308010G') { // RTX3080
+                        allOptions = [
+                            {gpus: 1, workers: 1, label: '1 GPU × 1 Worker', minRequired: 1},
+                            {gpus: 1, workers: 2, label: '1 GPU × 2 Workers', minRequired: 2}
+                        ];
+                    } else {
+                        // Default options for other GPU types
+                        allOptions = [
+                            {gpus: 1, workers: 1, label: '1 GPU × 1 Worker', minRequired: 1},
+                            {gpus: 1, workers: 2, label: '1 GPU × 2 Workers', minRequired: 2}
+                        ];
+                    }
                     
                     const container = document.getElementById('gpu-worker-options');
                     container.innerHTML = '';
                     
                     let hasEnabledOption = false;
                     
+                    // Create buttons for each option
                     allOptions.forEach(option => {
                         const button = document.createElement('button');
                         button.classList.add('button', 'gpu-worker-option');
@@ -287,28 +669,202 @@
                                 console.log('GPU-Worker button click:', this.dataset.gpus, 'x', this.dataset.workers);
                                 document.querySelectorAll('.gpu-worker-option').forEach(btn => {
                                     btn.classList.remove('is-primary', 'is-selected');
-                                    console.log('Removed selection:', btn.textContent);
                                 });
                                 this.classList.add('is-primary', 'is-selected');
-                                console.log('Added selection:', this.textContent);
                                 document.getElementById('gpu-limit-input').value = this.dataset.gpus;
                                 document.getElementById('worker-replicas-input').value = this.dataset.workers;
+                                
+                                // Update resource allocation preview
+                                updateResourceAllocationPreview(gpuType, option.gpus, option.workers);
                             });
                         }
                         
                         container.appendChild(button);
                     });
                     
-                    // Default select first available option
+                    // Auto-select first available option
                     if (hasEnabledOption) {
                         for (let i = 0; i < container.children.length; i++) {
                             const button = container.children[i];
                             if (!button.disabled) {
                                 button.click();
-                                button.classList.add('is-selected');
                                 break;
                             }
                         }
+                    } else {
+                        // Hide resource preview if no options available
+                        document.getElementById('resource-allocation-preview').style.display = 'none';
+                        document.getElementById('match-status-good').style.display = 'none';
+                        document.getElementById('match-status-poor').style.display = 'none';
+                    }
+                }
+                
+                // Function to update the resource allocation preview
+                function updateResourceAllocationPreview(gpuSku, gpuCount, workerCount) {
+                    const previewContainer = document.getElementById('resource-allocation-preview');
+                    
+                    // Get selected GPU information
+                    let gpuName = '';
+                    let cpuCoresPerGpu = 0;
+                    let memoryGbPerGpu = 0;
+                    let vramSize = '';
+                    let gpuMemoryGb = 0;
+                    let nodeKey = '';
+                    
+                    // Find GPU details from backend data - 选择最匹配的节点数据
+                    for (const nKey in window.gpuInfo) {
+                        if (window.gpuInfo[nKey].gpu_sku === gpuSku) {
+                            // 找到匹配的节点
+                            nodeKey = nKey;
+                            gpuName = window.gpuInfo[nKey].gpu_name;
+                            cpuCoresPerGpu = window.gpuInfo[nKey].cpu_cores_per_gpu;
+                            memoryGbPerGpu = window.gpuInfo[nKey].memory_gb_per_gpu;
+                            gpuMemoryGb = window.gpuInfo[nKey].gpu_memory_gb;
+                            
+                            // Extract VRAM size from SKU
+                            const match = gpuSku.match(/\d+G$/);
+                            if (match) {
+                                vramSize = match[0];
+                            } else {
+                                // Default value if unable to extract
+                                vramSize = 'Unknown GB';
+                            }
+                            // 如果有多个匹配节点，优先选择可用GPU更多的节点
+                            if (window.gpuInfo[nKey].total && window.gpuInfo[nKey].used) {
+                                if (window.gpuInfo[nKey].total - window.gpuInfo[nKey].used >= gpuCount) {
+                                    break; // 找到足够GPU的节点，停止搜索
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 如果没有找到匹配的节点，使用summary数据
+                    if (!nodeKey && window.gpuInfo) {
+                        for (const nKey in window.gpuInfo) {
+                            if (window.gpuInfo[nKey].gpu_sku === gpuSku) {
+                                nodeKey = nKey;
+                                gpuName = window.gpuInfo[nKey].gpu_name;
+                                cpuCoresPerGpu = window.gpuInfo[nKey].cpu_cores_per_gpu;
+                                memoryGbPerGpu = window.gpuInfo[nKey].memory_gb_per_gpu;
+                                gpuMemoryGb = window.gpuInfo[nKey].gpu_memory_gb;
+                                
+                                const match = gpuSku.match(/\d+G$/);
+                                if (match) {
+                                    vramSize = match[0];
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Extract VRAM size in GB as a number
+                    let vramSizeGB = gpuMemoryGb || 0;
+                    if (!vramSizeGB && vramSize) {
+                        const vramMatch = vramSize.match(/(\d+)/);
+                        if (vramMatch) {
+                            vramSizeGB = parseInt(vramMatch[1]);
+                        }
+                    }
+                    
+                    // 计算总资源 - 使用实际节点数据
+                    const totalCpuCoresForDisplay = (cpuCoresPerGpu * gpuCount).toFixed(1);
+                    const totalMemoryGb = (memoryGbPerGpu * gpuCount).toFixed(1);
+                    
+                    // Update preview information - 使用innerHTML而不是textContent
+                    const gpuValueText = `${gpuCount}× ${gpuName} (${vramSize} VRAM)`;
+                    const previewGpuInfo = document.getElementById('preview-gpu-info');
+                    const belowReqTag = document.getElementById('match-status-poor');
+                    
+                    // 先移除Below Requirements标签
+                    if (belowReqTag.parentNode === previewGpuInfo) {
+                        previewGpuInfo.removeChild(belowReqTag);
+                    }
+                    
+                    // 设置新的文本
+                    previewGpuInfo.textContent = gpuValueText;
+                    
+                    // 再添加回Below Requirements标签
+                    previewGpuInfo.insertBefore(belowReqTag, previewGpuInfo.firstChild);
+                    
+                    document.getElementById('preview-cpu-info').textContent = `${totalCpuCoresForDisplay} cores (automatically assigned)`;
+                    document.getElementById('preview-memory-info').textContent = `${totalMemoryGb}Gi (automatically assigned)`;
+                    
+                    // Show preview container
+                    previewContainer.style.display = 'block';
+                    
+                    // 获取当前选择的镜像
+                    const selectedImage = document.querySelector('select[name="master_image"]').value;
+                    
+                    // 获取匹配状态元素
+                    const matchStatusGoodElement = document.getElementById('match-status-good');
+                    const matchStatusPoorElement = document.getElementById('match-status-poor');
+                    
+                    // 默认隐藏匹配状态
+                    matchStatusGoodElement.style.display = 'none';
+                    matchStatusPoorElement.style.display = 'none';
+                    
+                    // 如果没有选择镜像，不进行资源匹配分析
+                    if (!selectedImage) {
+                        return;
+                    }
+                    
+                    // 从window.imagesData中查找所选镜像的元数据
+                    let selectedImageData = null;
+                    if (window.imagesData && window.imagesData.images) {
+                        selectedImageData = window.imagesData.images.find(img => img.full_name === selectedImage);
+                    }
+                    
+                    // 检查是否有 minimum_gpu_memory 数据
+                    if (!selectedImageData || !selectedImageData.minimum_gpu_memory) {
+                        // 没有最小GPU内存要求，不显示匹配分析
+                        return;
+                    }
+                    
+                    // 获取显示名称
+                    let displayName = selectedImageData.name || '';
+                    if (displayName) {
+                        displayName = getDisplayModelName(displayName);
+                    }
+                    
+                    // 获取镜像的最小GPU内存要求
+                    let minimumGpuMemory = 0;
+                    if (!isNaN(selectedImageData.minimum_gpu_memory)) {
+                        minimumGpuMemory = parseInt(selectedImageData.minimum_gpu_memory);
+                    } else if (typeof selectedImageData.minimum_gpu_memory === 'string') {
+                        // 尝试从字符串中提取数字
+                        const memoryMatch = selectedImageData.minimum_gpu_memory.match(/(\d+)/);
+                        if (memoryMatch) {
+                            minimumGpuMemory = parseInt(memoryMatch[1]);
+                        }
+                    }
+                    
+                    // 如果无法获取最小GPU内存要求，不显示匹配分析
+                    if (minimumGpuMemory <= 0) {
+                        return;
+                    }
+                    
+                    // 计算用户配置的总GPU内存
+                    const totalGpuMemory = vramSizeGB * gpuCount;
+                    
+                    // 输出详细的匹配计算信息到控制台
+                    console.log(`资源匹配计算 - ${selectedImage}:`, {
+                        displayName,
+                        minimumGpuMemory: `${minimumGpuMemory} GB`,
+                        gpuType: gpuSku,
+                        gpuName,
+                        singleGpuMemory: `${vramSizeGB} GB`,
+                        gpuCount,
+                        totalGpuMemory: `${totalGpuMemory} GB`,
+                        result: totalGpuMemory >= minimumGpuMemory ? 'Good' : 'Below Requirements'
+                    });
+                    
+                    // 根据总GPU内存与最小要求比较，确定匹配状态
+                    if (totalGpuMemory >= minimumGpuMemory) {
+                        // 匹配状态良好，显示 Good 标签
+                        matchStatusGoodElement.style.display = 'inline-flex';
+                    } else {
+                        // 资源不足，显示 Below Requirements 标签
+                        matchStatusPoorElement.style.display = 'inline-flex';
                     }
                 }
                 
@@ -536,10 +1092,10 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- 镜像元数据显示区域 -->
-                <div id="image-metadata-container" class="mt-2 px-3 py-2" style="display:none; background-color: #fafafa; border-radius: 4px;">
-                    <div id="image-metadata-content"></div>
+                <div id="image-metadata-container" style="display: none;">
+                    <div id="image-metadata-content" class="content markdown-body"></div>
                 </div>
             </div>
             
@@ -568,7 +1124,7 @@
                 <div class="field">
                     <label class="label">GPU Type</label>
                     <div class="control">
-                        <div id="gpu-options-container" class="buttons"></div>
+                        <div id="gpu-options-container" class="buttons gpu-buttons-container"></div>
                         <input type="hidden" id="gpu-type-input" name="gpu_type" value="RTX3090">
                         <input type="hidden" id="gpu-name-input" name="gpu_name" value="">
                     </div>
@@ -578,9 +1134,54 @@
                 <div id="gpu-worker-section" class="field">
                     <label class="label">GPU and Worker Configuration</label>
                     <div class="control">
-                        <div id="gpu-worker-options" class="buttons"></div>
+                        <div id="gpu-worker-options" class="buttons gpu-worker-buttons-container"></div>
                         <input type="hidden" id="gpu-limit-input" name="gpu_limit" value="1">
                         <input type="hidden" id="worker-replicas-input" name="worker_replicas" value="1">
+                    </div>
+                    
+                    <!-- Resource Allocation Preview -->
+                    <div id="resource-allocation-preview" class="mt-4" style="display: none;">
+                        <label class="label">Resource Allocation Preview</label>
+                        <div class="box has-background-white-ter">
+                            <div class="resource-preview-grid">
+                                <div class="resource-item">
+                                    <span class="icon-text">
+                                        <span class="icon has-text-info">
+                                            <i class="fas fa-microchip"></i>
+                                        </span>
+                                        <span class="has-text-weight-medium">GPU<span id="match-status-good" class="match-status good" style="display: none;">Good</span>:</span>
+                                    </span>
+                                    <span id="preview-gpu-info" class="resource-value"><span id="match-status-poor" class="match-status poor" style="display: none;">Below</span>-</span>
+                                </div>
+                                <div class="resource-item">
+                                    <span class="icon-text">
+                                        <span class="icon has-text-success">
+                                            <i class="fas fa-cog"></i>
+                                        </span>
+                                        <span class="has-text-weight-medium">CPU:</span>
+                                    </span>
+                                    <span id="preview-cpu-info" class="resource-value">-</span>
+                                </div>
+                                <div class="resource-item">
+                                    <span class="icon-text">
+                                        <span class="icon has-text-warning">
+                                            <i class="fas fa-memory"></i>
+                                        </span>
+                                        <span class="has-text-weight-medium">Memory:</span>
+                                    </span>
+                                    <span id="preview-memory-info" class="resource-value">-</span>
+                                </div>
+                                <div class="resource-item">
+                                    <span class="icon-text">
+                                        <span class="icon has-text-primary">
+                                            <i class="fas fa-hdd"></i>
+                                        </span>
+                                        <span class="has-text-weight-medium">Storage:</span>
+                                    </span>
+                                    <span id="preview-storage-info" class="resource-value">100GB temporary storage</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

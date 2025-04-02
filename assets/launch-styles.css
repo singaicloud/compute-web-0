@@ -153,25 +153,30 @@
 .match-status {
     display: inline-flex;
     align-items: center;
-    font-weight: 600;
-    margin-left: 8px;
-    padding: 2px 8px;
-    border-radius: 4px;
+    justify-content: center;
+    margin: 0 4px 0 2px;
+    font-size: 0.7rem;
+    vertical-align: middle;
+    position: relative;
 }
 
 .match-status.good {
-    background-color: rgba(72, 187, 120, 0.1);
     color: #2f855a;
 }
 
-.match-status.adequate {
-    background-color: rgba(236, 201, 75, 0.1);
-    color: #b7791f;
+.match-status.poor {
+    color: #c53030;
 }
 
-.match-status.poor {
-    background-color: rgba(245, 101, 101, 0.1);
-    color: #c53030;
+.match-status.good i,
+.match-status.poor i {
+    font-size: 11px;
+    position: relative;
+    top: -1px;
+    left: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .progress-bar-container {
@@ -251,7 +256,7 @@
     border: 1px solid #e2e8f0;
 }
 
-/* Markdown 样式 */
+/* Markdown styles */
 #image-metadata-content {
     font-family: 'IBM Plex Sans', sans-serif;
     line-height: 1.6;
@@ -304,7 +309,7 @@
     }
 }
 
-/* 美化镜像选择下拉框 */
+/* Beautify image selection dropdown */
 select[name="master_image"] {
     font-family: 'IBM Plex Sans', sans-serif;
     font-size: 1rem;
@@ -316,7 +321,7 @@ select[name="master_image"] {
     padding-right: 2.5rem;
 }
 
-/* Markdown 样式 */
+/* Markdown styles */
 .markdown-body {
     font-family: 'IBM Plex Sans', sans-serif;
     font-size: 16px;
@@ -353,4 +358,83 @@ select[name="master_image"] {
     padding: 0;
     border: none;
     margin: 0;
-} 
+}
+
+/* Resource Allocation Preview styles */
+#resource-allocation-preview .fa-check-circle,
+#resource-allocation-preview .fa-exclamation-circle {
+    font-size: 11px;
+    cursor: help;
+}
+
+#resource-allocation-preview .fa-check-circle {
+    color: #38a169;
+}
+
+#resource-allocation-preview .fa-exclamation-circle {
+    color: #e53e3e;
+}
+
+/* Custom tooltip styles */
+[data-tooltip] {
+    position: relative;
+    cursor: help;
+}
+
+[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(51, 51, 51, 0.95);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    z-index: 100;
+    pointer-events: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    letter-spacing: 0.2px;
+    text-transform: capitalize;
+}
+
+[data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Status icons container */
+.status-icons-container {
+    /* All styles have been moved to HTML in-line styles */
+}
+
+/* Match status positioning */
+#match-status-good,
+#match-status-poor {
+    /* All styles have been moved to HTML in-line styles */
+}
+
+/* Make all icons same position */
+.match-status i {
+    /* All styles have been moved to HTML in-line styles */
+}
+
+/* Icon colors */
+.fa-check-circle,
+.fa-exclamation-circle {
+    /* All styles have been moved to HTML in-line styles */
+}
+
+.fa-check-circle {
+    color: #38a169;
+}
+
+.fa-exclamation-circle {
+    color: #e53e3e;
+}

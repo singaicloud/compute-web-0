@@ -255,33 +255,30 @@
                     const selectedImage = document.querySelector('select[name="master_image"]').value;
                     const metadataContent = document.getElementById('image-metadata-content');
                     const metadataContainer = document.getElementById('image-metadata-container');
+                    const commandInput = document.querySelector('input[name="command"]');
                     
                     if (!selectedImage) {
                         if (metadataContent) metadataContent.innerHTML = '';
                         if (metadataContainer) metadataContainer.style.display = 'none';
+                        if (commandInput) commandInput.value = '';
                         return;
                     }
                     
                     // Find the selected image from all image data
                     const selectedImageObj = window.imagesData.images.find(img => img.full_name === selectedImage);
                     
-                    // Check if required metadata exists
-                    const hasMetadata = selectedImageObj && (
-                        selectedImageObj.description ||
-                        selectedImageObj.applicable_scenarios ||
-                        selectedImageObj.recommended_configuration ||
-                        selectedImageObj.github_repo
-                    );
-                    
-                    if (!hasMetadata) {
-                        // No required metadata, hide metadata area
-                        if (metadataContainer) metadataContainer.style.display = 'none';
-                        return;
-                    }
-                    
                     if (selectedImageObj) {
                         // Keep model name display style from backend
                         const displayName = getDisplayModelName(selectedImageObj.name);
+                        
+                        // Set default entrypoint if exists, otherwise clear the input
+                        if (commandInput) {
+                            if (selectedImageObj.default_entrypoint) {
+                                commandInput.value = selectedImageObj.default_entrypoint;
+                            } else {
+                                commandInput.value = '';
+                            }
+                        }
                         
                         // Build metadata HTML
                         let metadataHTML = `
@@ -324,13 +321,14 @@
                                 </div>
                             </div>`;
                         }
-                    
+                        
                         // Update metadata content and display
                         metadataContent.innerHTML = metadataHTML;
                         metadataContainer.style.display = 'block';
                     } else {
                         // No matching image found, hide metadata
                         if (metadataContainer) metadataContainer.style.display = 'none';
+                        if (commandInput) commandInput.value = '';
                     }
                 }
                 
@@ -1117,7 +1115,7 @@
                 <div id="entrypoint-section" class="field">
                     <label class="label">Entry Command (leave empty to enable SSH)</label>
                     <div class="control">
-                        <input class="input" type="text" name="command" value="" placeholder="e.g.: python /app/main.py --arg1 value1">
+                        <input class="input" type="text" name="command" value="" placeholder="e.g.: /usr/sbin/sshd -D">
                     </div>
                 </div>
                 

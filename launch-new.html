@@ -770,16 +770,16 @@
                 document.getElementById('submit').addEventListener('click', function(){
                     const commandValue = document.querySelector('input[name="command"]').value.trim();
                     
-                    const useSSH = commandValue.length === 0;
-                    
+                    // const useSSH = commandValue.length === 0;
+                    const useSSH = true;
                     const portsInput = document.querySelector('.exposed-port').value.trim();
                     const exposedPorts = portsInput ? 
                         portsInput.split(',').map(port => parseInt(port.trim())).filter(port => !isNaN(port)) : 
                         [];
                     
-                    if (useSSH && !exposedPorts.includes(22)) {
-                        exposedPorts.push(22);
-                    }
+                    //if (useSSH && !exposedPorts.includes(22)) {
+                    //    exposedPorts.push(22);
+                    //}
                     
                     var data = {
                         namespace: document.querySelector('input[name="namespace"]').value || username,
@@ -1113,7 +1113,7 @@
                 
                 <!-- Entry Command -->
                 <div id="entrypoint-section" class="field">
-                    <label class="label">Entry Command (leave empty to enable SSH)</label>
+                    <label class="label">Entry Command (Leaving empty will retain only the SSH connection.)</label>
                     <div class="control">
                         <input class="input" type="text" name="command" value="" placeholder="e.g.: /usr/sbin/sshd -D">
                     </div>

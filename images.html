@@ -125,13 +125,42 @@
                         <div id="localUpload" class="tab-pane active">
                             <form id="uploadForm" enctype="multipart/form-data">
                                 <div class="field">
-                                    <label class="label">Select .tar file</label>
-                                    <div class="control">
-                                        <input type="file" name="file" id="fileInput" class="input" accept=".tar" required>
+                                    <label class="label"><b>Upload Type</b></label>
+                                    <div class="control upload-type-radio">
+                                        <label class="radio-container" for="dockerTarRadio">
+                                            <input type="radio" name="uploadType" id="dockerTarRadio" value="docker-tar" checked>
+                                            <span class="radio-label">Docker image file</span>
+                                            
+                                        </label>
+                                        <label class="radio-container" for="dockerfilePackageRadio">
+                                            <input type="radio" name="uploadType" id="dockerfilePackageRadio" value="dockerfile-package">
+                                            <span class="radio-label">Dockerfile project package</span>
+                                            
+                                        </label>
                                     </div>
-                                    <p class="help">Choose a Docker image tar file to upload</p>
                                 </div>
-                                <div class="control">
+                                
+                                <div id="dockerTarUpload" class="upload-type-container">
+                                    <div class="field">
+                                        <label class="label"><b>Select Image File (.tar)</b></label>
+                                        <div class="file-input-wrapper">
+                                            <input type="file" name="file" id="fileInput" accept=".tar" required>
+                                        </div>
+                                        <p class="help">image tar file exported by <code>docker save</code></p>
+                                    </div>
+                                </div>
+                                
+                                <div id="dockerfileUpload" class="upload-type-container" style="display: none;">
+                                    <div class="field">
+                                        <label class="label"><b>Select Project Package (.zip/.rar)</b></label>
+                                        <div class="file-input-wrapper">
+                                            <input type="file" name="project-file" id="projectFileInput" accept=".zip,.rar" required>
+                                        </div>
+                                        <p class="help">compressed project package including a <code>Dockerfile</code></p>
+                                    </div>
+                                </div>
+                                
+                                <div class="control mt-2">
                                     <button type="button" id="uploadButton" class="button is-primary">
                                         <i class="fas fa-upload mr-2"></i>Upload Image
                                     </button>
@@ -141,6 +170,7 @@
                         
                         <!-- Fetch from URLs Tab -->
                         <div id="fetchUrl" class="tab-pane" style="display: none;">
+                            <!-- 
                             <div class="input-row">
                                 <div class="auth-dropdown">
                                     <label class="label">Select private image registry auth</label>
@@ -155,15 +185,16 @@
                                     <i class="fas fa-plus"></i> Registry Auth
                                 </button>
                             </div>
+                            -->
                             <div class="field">
-                                <label class="label">URL</label>
+                                <label class="label"><b>Image URL</b></label>
                                 <div class="control has-icons-left">
-                                    <input type="text" id="urlInput" class="input" placeholder="e.g., nvcr.io/nvidia/pytorch:24.11-py3">
+                                    <input type="text" id="urlInput" class="input" placeholder="e.g., docker.io/username/image:tag">
                                     <span class="icon is-small is-left">
                                         <i class="fas fa-link"></i>
                                     </span>
                                 </div>
-                                <p class="help">Enter the URL of the Docker image to fetch</p>
+                                <p class="help">URL of image in public dockerhub repository</p>
                             </div>
                             <div class="control">
                                 <button type="button" id="fetchButton" class="button is-primary">
@@ -244,6 +275,45 @@
                 });
             });
             
+            // Upload Type Radio Change
+            document.querySelectorAll('input[name="uploadType"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const selectedType = this.value;
+                    
+                    // Hide all upload containers
+                    document.querySelectorAll('.upload-type-container').forEach(container => {
+                        container.style.display = 'none';
+                    });
+                    
+                    // Show the selected upload container
+                    if (selectedType === "docker-tar") {
+                        document.getElementById("dockerTarUpload").style.display = "block";
+                    } else if (selectedType === "dockerfile-package") {
+                        document.getElementById("dockerfileUpload").style.display = "block";
+                    }
+                });
+            });
+            
+            // File input validation
+            document.getElementById('fileInput').addEventListener('change', function() {
+                const file = this.files[0];
+                if (file && !file.name.toLowerCase().endsWith('.tar')) {
+                    alert("Please select a valid .tar file");
+                    this.value = '';
+                }
+            });
+            
+            document.getElementById('projectFileInput').addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const fileName = file.name.toLowerCase();
+                    if (!fileName.endsWith('.zip') && !fileName.endsWith('.rar')) {
+                        alert("Only .zip and .rar files are supported for project packages");
+                        this.value = '';
+                    }
+                }
+            });
+            
             // Search for public images
             document.getElementById('publicSearchInput').addEventListener('keyup', function() {
                 filterTable('publicImageTableBody', this.value);
@@ -256,11 +326,44 @@
             
             // Upload from local for private images
             document.getElementById("uploadButton").addEventListener("click", function() {
-                var fileInput = document.getElementById("fileInput").files[0];
-                var formData = new FormData();
-                formData.append("file", fileInput);
+                const uploadType = document.querySelector('input[name="uploadType"]:checked').value;
+                let fileInput;
+                let formData = new FormData();
+                let apiEndpoint = '/me/upload-image';
+                
+                if (uploadType === "docker-tar") {
+                    fileInput = document.getElementById("fileInput").files[0];
+                    if (!fileInput) {
+                        alert("Please select a .tar file");
+                        return;
+                    }
+                    if (!fileInput.name.toLowerCase().endsWith('.tar')) {
+                        alert("Please select a valid .tar file");
+                        return;
+                    }
+                    // Use current API for .tar files
+                    formData.append("file", fileInput);
+                } else if (uploadType === "dockerfile-package") {
+                    fileInput = document.getElementById("projectFileInput").files[0];
+                    if (!fileInput) {
+                        alert("Please select a project package");
+                        return;
+                    }
+                    
+                    // Validate file extension for project package
+                    const fileName = fileInput.name.toLowerCase();
+                    if (!fileName.endsWith('.zip') && !fileName.endsWith('.rar')) {
+                        alert("Only .zip and .rar files are supported for project packages");
+                        return;
+                    }
+                    
+                    // Use same API for now, but might change in the future
+                    formData.append("file", fileInput);
+                    formData.append("upload_type", "dockerfile-package");
+                    // apiEndpoint = '/me/upload-dockerfile-project'; // For future use
+                }
 
-                api.postForm(`/me/upload-image`, formData)
+                api.postForm(apiEndpoint, formData)
                 .then(data => {
                     var uploadResult = document.getElementById("uploadResult");
                     uploadResult.classList.remove("is-hidden");
@@ -281,7 +384,7 @@
             // Fetch from URL for private images
             document.getElementById("fetchButton").addEventListener("click", function() {
                 const url = document.getElementById("urlInput").value;
-                const registryAuth = document.getElementById("registryAuth").value;
+                // const registryAuth = document.getElementById("registryAuth").value; // Temporarily commented out
                 
                 if (!url) {
                     alert("Please enter a URL");
@@ -292,7 +395,7 @@
                 return;
                 api.post(`/me/fetch-image`, {
                     url: url,
-                    registry_auth: registryAuth
+                    // registry_auth: registryAuth // Temporarily commented out
                 })
                 .then(data => {
                     var uploadResult = document.getElementById("uploadResult");
@@ -414,7 +517,7 @@
         function formatSize(sizeInBytes) {
             if (!sizeInBytes) return "Unknown";
             
-            const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const units = ['GB'];
             let size = sizeInBytes;
             let unitIndex = 0;
             

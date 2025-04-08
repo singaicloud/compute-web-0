@@ -141,13 +141,9 @@
 .tab-item {
     padding: 0.8rem 1.2rem;
     cursor: pointer;
-    border: 1px solid transparent;
-    border-bottom: none;
-    margin-right: 0.5rem;
-    border-radius: 6px 6px 0 0;
     font-weight: 600;
-    font-size: 0.85rem;
-    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    /* transition: all 0.2s ease; */
 }
 
 .tab-item:hover:not(.active) {
@@ -155,19 +151,14 @@
 }
 
 .tab-item.active {
-    border-color: var(--border-color);
     background-color: white;
-    margin-bottom: -1px;
-    color: #333;
-    box-shadow: none;
+    color: var(--brand-color);
+    border-bottom: 2px solid var(--brand-color);
 }
 
 .tab-content {
-    border-top: none;
     padding: 1.5rem;
     background-color: white;
-    border-radius: 0 0 8px 8px;
-    font-size: 0.85rem;
 }
 
 .input-row {
@@ -312,10 +303,10 @@ select:focus {
 
 /* Notification styling */
 .notification {
-    border-radius: 6px;
-    margin-top: 1.25rem;
-    padding: 1rem 1.5rem;
-    box-shadow: none;
+    padding: 0.75rem 1rem;
+    margin-top: 1rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
 }
 
 .notification.is-hidden {
@@ -323,15 +314,15 @@ select:focus {
 }
 
 .notification.is-success {
-    background-color: #f0f9f5;
-    color: #0c6b37;
-    border: 1px solid #bae6cf;
+    background-color: #effaf3;
+    color: #257942;
+    border: 1px solid #c2e7ca;
 }
 
 .notification.is-danger {
-    background-color: #fff2f3;
-    color: #b71c1c;
-    border: 1px solid #faccd2;
+    background-color: #feecf0;
+    color: #cc0f35;
+    border: 1px solid #f9c5d1;
 }
 
 /* Modal styling */
@@ -482,14 +473,16 @@ select:focus {
 #uploadButton, #fetchButton {
     padding: 0.6rem 1.2rem;
     font-weight: 500;
-    margin-top: 0rem;
+    margin-top: 0.5rem;
     background-color: var(--brand-color);
     color: white;
+    border: 1px solid var(--brand-color);
+    transition: all 0.2s ease;
 }
 
 #uploadButton:hover, #fetchButton:hover {
-    background-color: #443980;
-    color: white;
+    background-color: white;
+    color: var(--brand-color);
 }
 
 #uploadButton:focus, #fetchButton:focus {
@@ -507,4 +500,142 @@ select:focus {
 
 .mb-2 {
     margin-bottom: 0.5rem;
-} 
+}
+
+/* Upload type selection styling */
+.upload-type-container {
+    margin-top: 0.75rem;
+    padding: 0;
+    border: none;
+    background-color: transparent;
+}
+
+/* File input styling */
+.file-input-wrapper {
+    margin-bottom: 0.5rem;
+}
+
+.file-input-wrapper input[type="file"] {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.5rem;
+    width: 100%;
+    background-color: white;
+}
+
+.file-input-wrapper input[type="file"]:hover {
+    border-color: #b5b5b5;
+}
+
+.file-input-wrapper input[type="file"]:focus {
+    border-color: var(--brand-color);
+    outline: none;
+}
+
+/* Radio button styling for upload type */
+.upload-type-radio {
+    display: flex;
+    flex-direction: row;
+    gap: 1.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.radio-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.5rem 0;
+    transition: all 0.2s ease;
+}
+
+.radio-container:hover .radio-label {
+    color: var(--brand-color);
+}
+
+.radio-container input[type="radio"] {
+    margin-right: 0.5rem;
+    accent-color: var(--brand-color);
+    opacity: 0.8;
+}
+
+.radio-container input[type="radio"]:checked {
+    opacity: 1;
+}
+
+.radio-container input[type="radio"]:checked + .radio-label {
+    color: var(--brand-color);
+    font-weight: 600;
+}
+
+.radio-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-right: 0.5rem;
+}
+
+.radio-description {
+    font-size: 0.8rem;
+    color: #777;
+    font-style: italic;
+}
+
+/* Help text styling */
+.help {
+    color: #666;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+.help code {
+    background-color: #e6e9f3;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-family: monospace;
+    color: var(--brand-color);
+    font-size: 0.85rem;
+}
+
+/* Form field styling */
+.field {
+    margin-bottom: 1rem;
+}
+
+.field:last-child {
+    margin-bottom: 0;
+}
+
+.field .label {
+    display: block;
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    color: #363636;
+}
+
+/* Action buttons styling */
+.action-buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+}
+
+.delete-button {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+}
+
+.delete-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #333;
+    border-bottom: none;
+}
+
+.delete-button i {
+    margin-right: 0.25rem;
+}

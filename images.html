@@ -35,7 +35,10 @@
             <div class="progress-title">
                 <span id="topProgressTitle">Upload progress</span>
             </div>
-            <div id="topProgressPercentage" class="has-text-weight-bold">0%</div>
+            <div class="progress-actions">
+                <div id="topProgressPercentage" class="has-text-weight-bold">0%</div>
+                <i id="cancelUpload" class="fas fa-times-circle" title="Cancel upload"></i>
+            </div>
         </div>
         <progress id="topProgressBar" class="progress is-primary" value="0" max="100"></progress>
         <p id="topProgressStatus" class="has-text-centered">Preparing upload...</p>
@@ -260,6 +263,9 @@
     </footer>
 
     <script>
+        // Variable to store the current XHR request for cancellation
+        let currentUploadXHR = null;
+        
         // frozen effect when uploading or fetching images
         function disableAllButtons() {
             // frozen overlay to main content
@@ -333,6 +339,24 @@
         // Fetch and render images from API
         document.addEventListener('DOMContentLoaded', function() {
             fetchImageInfo();
+            
+            // Setup cancel upload button
+            document.getElementById("cancelUpload").addEventListener("click", function() {
+                if (currentUploadXHR) {
+                    // Abort the current XHR request
+                    currentUploadXHR.abort();
+                    
+                    // Hide progress modal
+                    document.getElementById("topProgressContainer").classList.remove("visible");
+                    
+                    // Re-enable all buttons
+                    enableAllButtons();
+                    
+                    // Reset current XHR reference
+                    currentUploadXHR = null;
+                }
+            });
+            
             // Add Images
             document.getElementById("addImagesBtn").addEventListener("click", function() {
                 const uploadOptions = document.getElementById("uploadOptions");
@@ -477,6 +501,9 @@
                 
                 // create and configure XHR for progress tracking
                 const xhr = new XMLHttpRequest();
+                // Store XHR reference for cancellation
+                currentUploadXHR = xhr;
+                
                 xhr.open('POST', api.baseUrl + apiEndpoint, true);
                 if (api.token) {
                     xhr.setRequestHeader('Authorization', 'Bearer ' + api.token);
@@ -508,6 +535,9 @@
                     
                     // re-enable all buttons
                     enableAllButtons();
+                    
+                    // Reset current XHR reference
+                    currentUploadXHR = null;
                     
                     if (xhr.status >= 200 && xhr.status < 300) {
                         try {
@@ -543,6 +573,14 @@
                     
                     // re-enable all buttons
                     enableAllButtons();
+                    
+                    // Reset current XHR reference
+                    currentUploadXHR = null;
+                };
+                
+                // cancel event
+                xhr.onabort = function() {
+                    // console.log("Upload aborted by user");
                 };
                 
                 // Start the upload

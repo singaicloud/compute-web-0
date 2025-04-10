@@ -739,6 +739,23 @@ progress.progress.is-info::-webkit-progress-value {
     margin-right: 8px;
 }
 
+#topProgressContainer .progress-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#cancelUpload {
+    cursor: pointer;
+    color: #888;
+    font-size: 1.2rem;
+    transition: all 0.2s ease;
+}
+
+#cancelUpload:hover {
+    color: #ff3860;
+}
+
 #topProgressContainer .progress {
     margin-bottom: 8px;
     height: 12px;

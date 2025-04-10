@@ -639,3 +639,133 @@ select:focus {
 .delete-button i {
     margin-right: 0.25rem;
 }
+
+/* Progress bar styles moved from HTML */
+#uploadProgressContainer, #fetchProgressContainer {
+    margin: 1rem 0;
+    transition: all 0.3s ease;
+}
+
+progress.progress {
+    height: 1rem;
+    border-radius: 4px;
+    overflow: hidden;
+    border: none;
+}
+
+progress.progress::-webkit-progress-bar {
+    background-color: #f0f0f0;
+}
+
+progress.progress.is-primary::-webkit-progress-value {
+    background-color: var(--brand-color);
+    transition: width 0.3s ease;
+}
+
+progress.progress.is-info::-webkit-progress-value {
+    background-color: #3298dc;
+    transition: width 0.3s ease;
+}
+
+#uploadProgressText, #fetchStatusText {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Styles for disabled UI elements during upload/fetch */
+.upload-frozen {
+    position: relative;
+}
+
+.upload-frozen::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.6);
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.upload-frozen.active::after {
+    opacity: 1;
+}
+
+/* Top fixed progress bar */
+#topProgressContainer {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 500px;
+    max-width: 90%;
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0;
+    background-color: rgb(255, 255, 255);
+    border-radius: 0px;
+    /* box-shadow: 0 5px 5px rgba(0, 0, 0, 0.15); */
+    padding: 15px 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    visibility: hidden;
+}
+
+#topProgressContainer.visible {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+    visibility: visible;
+}
+
+#topProgressContainer .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#topProgressContainer .progress-title {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    font-size: 1.1rem;
+}
+
+#topProgressContainer .progress-title i {
+    margin-right: 8px;
+}
+
+#topProgressContainer .progress {
+    margin-bottom: 8px;
+    height: 12px;
+}
+
+/* Add operation notification for the center modal */
+#topProgressStatus {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    text-align: center;
+    color: #555;
+}
+
+/* Operation notification box */
+#operationMessage {
+    position: absolute;
+    bottom: -41px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    background-color: var(--border-color);
+    color: rgb(132, 132, 132);
+    padding: 8px;
+    font-size: 0.9rem;
+}
+
+@keyframes spinAround {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(359deg); }
+}

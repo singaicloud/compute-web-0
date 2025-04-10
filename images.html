@@ -29,6 +29,19 @@
 <body>
     <sing-navigation></sing-navigation>
 
+    <!-- Top fixed progress bar -->
+    <div id="topProgressContainer">
+        <div class="progress-header">
+            <div class="progress-title">
+                <span id="topProgressTitle">Upload progress</span>
+            </div>
+            <div id="topProgressPercentage" class="has-text-weight-bold">0%</div>
+        </div>
+        <progress id="topProgressBar" class="progress is-primary" value="0" max="100"></progress>
+        <p id="topProgressStatus" class="has-text-centered">Preparing upload...</p>
+        <div id="operationMessage">Operation in progress. Please wait until completion.</div>
+    </div>
+
     <section class="section content"> 
         <div class="container">
             <h1 class="title">Available Images</h1>
@@ -40,6 +53,7 @@
                     <i class="fas fa-globe-americas mr-2"></i> Public Image Repository
                 </div>
                 <div class="repository-content">
+                    <div id="deleteResultInPublic" class="notification is-hidden mb-4"></div>
                     <div class="filter-search-box">
                         <div class="field">
                             <label class="label">Filter/Search</label>
@@ -75,6 +89,7 @@
                     <i class="fas fa-lock mr-2"></i> Private Image Repository
                 </div>
                 <div class="repository-content">
+                    <div id="deleteResultInPrivate" class="notification is-hidden mb-4"></div>
                     <div class="filter-search-box">
                         <div class="field">
                             <label class="label">Filter/Search</label>
@@ -245,13 +260,82 @@
     </footer>
 
     <script>
+        // frozen effect when uploading or fetching images
+        function disableAllButtons() {
+            // frozen overlay to main content
+            document.querySelector('.container').classList.add('upload-frozen', 'active');
+
+            // disable functions in pages
+            document.querySelectorAll('.control mt-2').forEach(button => {
+                button.style.pointerEvents = 'none';
+            });
+            document.querySelectorAll('.tab-content').forEach(button => {
+                button.style.pointerEvents = 'none';
+            });
+            document.querySelectorAll('.view-button').forEach(button => {
+                button.style.pointerEvents = 'none';
+            });
+            document.querySelectorAll('.action-buttons a').forEach(link => {
+                link.style.pointerEvents = 'none';
+            });
+            document.querySelectorAll('.add-button').forEach(button => {
+                button.style.pointerEvents = 'none';
+            });
+            document.querySelectorAll('input[type="file"]').forEach(input => {
+                input.style.pointerEvents = 'none';
+            });
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.style.pointerEvents = 'none';
+            });
+            document.querySelectorAll('.tab-item').forEach(tab => {
+                tab.style.pointerEvents = 'none';
+            });
+            document.querySelectorAll('input[type="text"]').forEach(input => {
+                input.style.pointerEvents = 'none';
+            });
+        }
+        
+        function enableAllButtons() {
+            // Remove frozen overlay effect from main content
+            document.querySelector('.container').classList.remove('upload-frozen', 'active');
+            
+            // Re-enable all buttons
+            document.querySelectorAll('.control mt-2').forEach(button => {
+                button.style.pointerEvents = '';
+            });
+            document.querySelectorAll('.tab-content').forEach(button => {
+                button.style.pointerEvents = '';
+            });
+            document.querySelectorAll('.view-button').forEach(button => {
+                button.style.pointerEvents = '';
+            });
+            document.querySelectorAll('.action-buttons a').forEach(link => {
+                link.style.pointerEvents = '';
+            });
+            document.querySelectorAll('.add-button').forEach(button => {
+                button.style.pointerEvents = '';
+            });
+            document.querySelectorAll('input[type="file"]').forEach(input => {
+                input.style.pointerEvents = '';
+            });
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.style.pointerEvents = '';
+            });
+            document.querySelectorAll('.tab-item').forEach(tab => {
+                tab.style.pointerEvents = '';
+            });
+            document.querySelectorAll('input[type="text"]').forEach(input => {
+                input.style.pointerEvents = '';
+            });
+            
+        }
+
         // Fetch and render images from API
         document.addEventListener('DOMContentLoaded', function() {
             fetchImageInfo();
             // Add Images
             document.getElementById("addImagesBtn").addEventListener("click", function() {
                 const uploadOptions = document.getElementById("uploadOptions");
-                
                 if (uploadOptions.style.display === "none" || uploadOptions.style.display === "") {
                     uploadOptions.style.display = "block";
                 } else {
@@ -262,14 +346,9 @@
             // Tab
             document.querySelectorAll('.tab-item').forEach(tab => {
                 tab.addEventListener('click', function() {
-                    // Remove active class from all tabs
                     document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-                    // Add active class to clicked tab
                     this.classList.add('active');
-                    
-                    // Hide all tab panes
                     document.querySelectorAll('.tab-pane').forEach(pane => pane.style.display = 'none');
-                    // Show the corresponding tab pane
                     const tabId = this.getAttribute('data-tab');
                     document.getElementById(tabId).style.display = 'block';
                 });
@@ -279,12 +358,9 @@
             document.querySelectorAll('input[name="uploadType"]').forEach(radio => {
                 radio.addEventListener('change', function() {
                     const selectedType = this.value;
-                    
-                    // Hide all upload containers
                     document.querySelectorAll('.upload-type-container').forEach(container => {
                         container.style.display = 'none';
                     });
-                    
                     // Show the selected upload container
                     if (selectedType === "docker-tar") {
                         document.getElementById("dockerTarUpload").style.display = "block";
@@ -302,7 +378,6 @@
                     this.value = '';
                 }
             });
-            
             document.getElementById('projectFileInput').addEventListener('change', function() {
                 const file = this.files[0];
                 if (file) {
@@ -329,24 +404,55 @@
                 const uploadType = document.querySelector('input[name="uploadType"]:checked').value;
                 let fileInput;
                 let formData = new FormData();
-                let apiEndpoint = '/me/upload-image';
+                let apiEndpoint;
+
+                // Hide previous result notification
+                const uploadResult = document.getElementById("uploadResult");
+                uploadResult.classList.add("is-hidden");
+                
+                // Setup center progress modal
+                const topProgressContainer = document.getElementById("topProgressContainer");
+                const topProgressBar = document.getElementById("topProgressBar");
+                const topProgressPercentage = document.getElementById("topProgressPercentage");
+                const topProgressStatus = document.getElementById("topProgressStatus");
+                const topProgressTitle = document.getElementById("topProgressTitle");
+                
+                // Configure and show progress modal
+                topProgressTitle.textContent = "Upload progress";
+                topProgressBar.value = 0;
+                topProgressPercentage.textContent = "0%";
+                topProgressStatus.textContent = "Preparing upload...";
+                topProgressContainer.classList.add("visible");
+                
+                // Disable all buttons during upload
+                disableAllButtons();
                 
                 if (uploadType === "docker-tar") {
                     fileInput = document.getElementById("fileInput").files[0];
                     if (!fileInput) {
                         alert("Please select a .tar file");
+                        topProgressContainer.classList.remove("visible");
+                        enableAllButtons();
                         return;
                     }
                     if (!fileInput.name.toLowerCase().endsWith('.tar')) {
                         alert("Please select a valid .tar file");
+                        topProgressContainer.classList.remove("visible");
+                        enableAllButtons();
                         return;
                     }
-                    // Use current API for .tar files
+
                     formData.append("file", fileInput);
+                    formData.append('tag', '1.0');
+                    const imageName = fileInput.name.split('.').slice(0, -1).join('.'); // remove the extension
+                    formData.append('image-name', imageName);
+                    apiEndpoint = '/me/upload-image-tar';
                 } else if (uploadType === "dockerfile-package") {
                     fileInput = document.getElementById("projectFileInput").files[0];
                     if (!fileInput) {
                         alert("Please select a project package");
+                        topProgressContainer.classList.remove("visible");
+                        enableAllButtons();
                         return;
                     }
                     
@@ -354,31 +460,93 @@
                     const fileName = fileInput.name.toLowerCase();
                     if (!fileName.endsWith('.zip') && !fileName.endsWith('.rar')) {
                         alert("Only .zip and .rar files are supported for project packages");
+                        topProgressContainer.classList.remove("visible");
+                        enableAllButtons();
                         return;
                     }
-                    
-                    // Use same API for now, but might change in the future
-                    formData.append("file", fileInput);
-                    formData.append("upload_type", "dockerfile-package");
-                    // apiEndpoint = '/me/upload-dockerfile-project'; // For future use
-                }
 
-                api.postForm(apiEndpoint, formData)
-                .then(data => {
-                    var uploadResult = document.getElementById("uploadResult");
+                    formData.append("file", fileInput);
+                    formData.append('tag', '1.0');
+                    const imageName = fileInput.name.split('.').slice(0, -1).join('.'); // remove the extension
+                    formData.append('image-name', imageName);
+                    apiEndpoint = '/me/upload-dockerfile';
+                }
+                
+                // update progress status with file info
+                topProgressStatus.textContent = `Uploading ${fileInput.name} (${formatFileSize(fileInput.size)})`;
+                
+                // create and configure XHR for progress tracking
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', api.baseUrl + apiEndpoint, true);
+                if (api.token) {
+                    xhr.setRequestHeader('Authorization', 'Bearer ' + api.token);
+                }
+                xhr.upload.onprogress = function(e) {
+                    if (e.lengthComputable) {
+                        const percentComplete = Math.round((e.loaded / e.total) * 100);
+                        
+                        // update progress bar
+                        topProgressBar.value = percentComplete;
+                        topProgressPercentage.textContent = percentComplete + "%";
+                        
+                        if (percentComplete < 25) {
+                            topProgressStatus.textContent = `Starting upload: ${formatFileSize(e.loaded)} of ${formatFileSize(e.total)}`;
+                        } else if (percentComplete < 50) {
+                            topProgressStatus.textContent = `Uploading: ${formatFileSize(e.loaded)} of ${formatFileSize(e.total)}`;
+                        } else if (percentComplete < 90) {
+                            topProgressStatus.textContent = `Transferring: ${formatFileSize(e.loaded)} of ${formatFileSize(e.total)}`;
+                        } else {
+                            topProgressStatus.textContent = `Finalizing: ${formatFileSize(e.loaded)} of ${formatFileSize(e.total)}`;
+                        }
+                    }
+                };
+                
+                // Upload completed
+                xhr.onload = function() {
+                    topProgressContainer.classList.remove("visible");
                     uploadResult.classList.remove("is-hidden");
-                    uploadResult.classList.add(data.error ? "is-danger" : "is-success");
-                    uploadResult.textContent = data.message || data.error;
-                    // Refresh image list after upload
-                    fetchImageInfo();
-                })
-                .catch(error => {
-                    console.log("Error uploading image:", error);
-                    var uploadResult = document.getElementById("uploadResult");
-                    uploadResult.classList.remove("is-hidden");
+                    
+                    // re-enable all buttons
+                    enableAllButtons();
+                    
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            uploadResult.classList.remove("is-danger");
+                            uploadResult.classList.add("is-success");
+                            uploadResult.textContent = response.message || "Upload successful";
+                            // refresh image list
+                            fetchImageInfo();
+                        } catch (e) {
+                            uploadResult.classList.remove("is-success");
+                            uploadResult.classList.add("is-danger");
+                            uploadResult.textContent = "Error processing server response";
+                        }
+                    } else {
+                        uploadResult.classList.remove("is-success");
+                        uploadResult.classList.add("is-danger");
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            uploadResult.textContent = response.error || "Upload failed";
+                        } catch (e) {
+                            uploadResult.textContent = "Upload failed: " + xhr.status;
+                        }
+                    }
+                };
+                
+                // upload error
+                xhr.onerror = function() {
+                    topProgressContainer.classList.remove("visible");
+                    uploadResult.classList.remove("is-hidden", "is-success");
                     uploadResult.classList.add("is-danger");
-                    uploadResult.textContent = "Error uploading image.";
-                });
+                    uploadResult.textContent = "Network error during upload";
+                    
+                    // re-enable all buttons
+                    enableAllButtons();
+                };
+                
+                // Start the upload
+                xhr.send(formData);
             });
 
             // Fetch from URL for private images
@@ -390,30 +558,111 @@
                     alert("Please enter a URL");
                     return;
                 }
-                // Attention: API is not ready yet
+                
+                // hide previous result notification
+                const uploadResult = document.getElementById("uploadResult");
+                uploadResult.classList.add("is-hidden");
+                
+                // setup center progress modal
+                const topProgressContainer = document.getElementById("topProgressContainer");
+                const topProgressBar = document.getElementById("topProgressBar");
+                const topProgressPercentage = document.getElementById("topProgressPercentage");
+                const topProgressStatus = document.getElementById("topProgressStatus");
+                const topProgressTitle = document.getElementById("topProgressTitle");
+                
+                // configure and show progress modal
+                topProgressTitle.textContent = "Fetch progress";
+                topProgressBar.value = 0;
+                topProgressBar.classList.remove("is-primary");
+                topProgressBar.classList.add("is-info");
+                topProgressPercentage.textContent = "0%";
+                topProgressStatus.textContent = "Initializing fetch...";
+                topProgressContainer.classList.add("visible");
+                
+                // disable all buttons during fetch
+                disableAllButtons();
+                
+                // simulated progress for demo since the API is not ready yet
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 5;
+                    if (progress <= 100) {
+                        // update progress bar
+                        topProgressBar.value = progress;
+                        topProgressPercentage.textContent = progress + "%";
+                        
+                        if (progress < 20) {
+                            topProgressStatus.textContent = "Connecting to registry...";
+                        } else if (progress < 50) {
+                            topProgressStatus.textContent = "Downloading image...";
+                        } else if (progress < 80) {
+                            topProgressStatus.textContent = "Processing image...";
+                        } else {
+                            topProgressStatus.textContent = "Finalizing...";
+                        }
+                    } else {
+                        clearInterval(interval);
+                        topProgressContainer.classList.remove("visible");
+                        
+                        // reset progress bar class for future use
+                        topProgressBar.classList.remove("is-info");
+                        topProgressBar.classList.add("is-primary");
+                        
+                        // Show result
+                        uploadResult.classList.remove("is-hidden");
+                        uploadResult.classList.add("is-warning");
+                        uploadResult.textContent = "API for fetching images from URL is not ready yet.";
+                        
+                        // Re-enable all buttons
+                        enableAllButtons();
+                        
+                        // Refresh image list (would be done after actual fetch)
+                        // fetchImageInfo();
+                    }
+                }, 200);
+                
+                // not ready yet
                 alert("fetch image from url");
                 return;
+                
+                /* not ready yet
                 api.post(`/me/fetch-image`, {
                     url: url,
-                    // registry_auth: registryAuth // Temporarily commented out
+                    // registry_auth: registryAuth
                 })
                 .then(data => {
-                    var uploadResult = document.getElementById("uploadResult");
+                    topProgressContainer.classList.remove("visible");
                     uploadResult.classList.remove("is-hidden");
                     uploadResult.classList.add(data.error ? "is-danger" : "is-success");
                     uploadResult.textContent = data.message || data.error;
-                    // Refresh image list after upload
+                    // Re-enable all buttons
+                    enableAllButtons();
+                    // Refresh image list after fetch
                     fetchImageInfo();
                 })
                 .catch(error => {
+                    topProgressContainer.classList.remove("visible");
                     console.log("Error fetching image:", error);
-                    var uploadResult = document.getElementById("uploadResult");
                     uploadResult.classList.remove("is-hidden");
                     uploadResult.classList.add("is-danger");
                     uploadResult.textContent = "Error fetching image.";
+                    // Re-enable all buttons
+                    enableAllButtons();
                 });
+                */
             });
         });
+        
+        // format file size in a human-readable format
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
         
         function filterTable(tableBodyId, query) {
             const tableBody = document.getElementById(tableBodyId);
@@ -445,7 +694,7 @@
                         const tableBody = isPublic ? publicTableBody : privateTableBody;
                         
                         const row = document.createElement('tr');
-                        const size = formatSize(image.size);
+                        const size = image.size + "GB";
                         
                         if (isPublic) {
                             row.innerHTML = `
@@ -455,7 +704,12 @@
                                 <td>${size}</td>
                                 <td>${new Date(image.created_at || image.inserted_at).toLocaleString()}</td>
                                 <td><a href="#" class="view-button" onclick="showDetails('${encodeURIComponent(JSON.stringify(image))}')"><i class="fas fa-circle-info"></i> View</a></td>
-                                <td><a href="#" class="create-from-label" data-repository="${image.registry_host}" data-image="${image.name}" data-tag="${image.tag}" data-details='${encodeURIComponent(JSON.stringify(image))}'><i class="fas fa-square-plus"></i>Create from</a></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="#" class="create-from-label" data-repository="${image.registry_host}" data-image="${image.name}" data-tag="${image.tag}" data-details='${encodeURIComponent(JSON.stringify(image))}'><i class="fas fa-square-plus"></i>Create from</a>
+                                        <a href="#" class="delete-button" data-repository="${image.registry_host}" data-image="${image.name}" data-tag="${image.tag}" data-digest="${image.digest}"><i class="fas fa-trash"></i> Delete</a>
+                                    </div>
+                                </td>
                                 <td><span class="label-badge"><i class="fas fa-tag mr-1"></i>Models</span></td>
                             `;
                         } else {
@@ -468,7 +722,12 @@
                                 <td>${size}</td>
                                 <td>${new Date(image.created_at || image.inserted_at).toLocaleString()}</td>
                                 <td><a href="#" class="view-button" onclick="showDetails('${encodeURIComponent(JSON.stringify(image))}')"><i class="fas fa-circle-info"></i> View</a></td>
-                                <td><a href="#" class="create-from-label" data-repository="${image.registry_host}" data-image="${image.name}" data-tag="${image.tag}" data-details='${encodeURIComponent(JSON.stringify(image))}'><i class="fas fa-square-plus"></i>Create from</a></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="#" class="create-from-label" data-repository="${image.registry_host}" data-image="${image.name}" data-tag="${image.tag}" data-details='${encodeURIComponent(JSON.stringify(image))}'><i class="fas fa-square-plus"></i>Create from</a>
+                                        <a href="#" class="delete-button" data-repository="${image.registry_host}" data-image="${image.name}" data-tag="${image.tag}" data-digest="${image.digest}"><i class="fas fa-trash"></i> Delete</a>
+                                    </div>
+                                </td>
                                 <td><span class="label-badge"><i class="fas fa-tag mr-1"></i>Models</span></td>
                             `;
                         }
@@ -505,38 +764,87 @@
                             e.preventDefault();
                         });
                     });
+                    
+                    // Delete image buttons
+                    document.querySelectorAll('.delete-button').forEach(button => {
+                        button.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            
+                            const repository = this.getAttribute('data-repository');
+                            const imageName = this.getAttribute('data-image');
+                            const tag = this.getAttribute('data-tag');
+                            const digest = this.getAttribute('data-digest');
+                            
+                            if (confirm(`Are you sure you want to delete the image ${imageName}:${tag}?`)) {
+                                deleteImage(repository, imageName, tag, digest);
+                            }
+                        });
+                    });
                 })
                 .catch(error => console.error('Error fetching image data:', error));
+        }
+        
+        function deleteImage(registry_host, name, tag, digest) {
+            console.log("Deleting image:", registry_host, name, tag, digest);
+            let resultNotificationId;
+            if (registry_host.includes('public')) {
+                resultNotificationId = "deleteResultInPublic";
+            } else {
+                resultNotificationId = "deleteResultInPrivate";
+            }
+            // const resultNotification = document.getElementById(resultNotificationId);
+            // resultNotification.classList.remove("is-hidden", "is-danger", "is-success");
+            // resultNotification.classList.add("is-info");
+            // resultNotification.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Deleting image...';
+            
+            // disableAllButtons();
+            
+            api.post('/me/delete-image', {
+                digest: digest,
+                registry_host: registry_host,
+                name: name,
+                tag: tag
+            })
+            .then(response => {
+                // display success message
+                const resultNotification = document.getElementById(resultNotificationId);
+                resultNotification.classList.remove("is-hidden", "is-danger");
+                resultNotification.classList.add("is-success");
+                resultNotification.textContent = "Image successfully deleted";
+                
+                // Re-enable all buttons
+                // enableAllButtons();
+                
+                // Auto-hide the notification after 5 seconds
+                setTimeout(() => {
+                    resultNotification.classList.add("is-hidden");
+                }, 5000);
+                
+                // Refresh the image list
+                fetchImageInfo();
+            })
+            .catch(error => {
+                console.error('Error deleting image:', error);
+                const resultNotification = document.getElementById(resultNotificationId);
+                resultNotification.classList.remove("is-hidden", "is-success", "is-info");
+                resultNotification.classList.add("is-danger");
+                resultNotification.textContent = error.response?.data?.error || "Error deleting image";
+                
+                enableAllButtons();
+                
+                setTimeout(() => {
+                    resultNotification.classList.add("is-hidden");
+                }, 5000);
+            });
         }
         
         function determineSource(tagData) {
             // Attention: field in API is not ready yet
             return "Local Upload";
         }
-        
-        function formatSize(sizeInBytes) {
-            if (!sizeInBytes) return "Unknown";
-            
-            const units = ['GB'];
-            let size = sizeInBytes;
-            let unitIndex = 0;
-            
-            while (size >= 1024 && unitIndex < units.length - 1) {
-                size /= 1024;
-                unitIndex++;
-            }
-            
-            return `${size.toFixed(2)} ${units[unitIndex]}`;
-        }
 
         function showDetails(details) {
-            details = JSON.parse(decodeURIComponent(details)); // Parse the JSON string
-
-            // Create label items
-            // const labelItems = details.labels ? 
-            //     Object.entries(details.labels).map(
-            //         ([key, value]) => `<li><strong>${key}:</strong> ${value}</li>`
-            //     ).join('') : '<li>No labels available</li>';
+            details = JSON.parse(decodeURIComponent(details)); // parse the JSON string
             
             // show default port if available
             const portsDisplay = details.default_port ? 

@@ -1,0 +1,440 @@
+/* Launch page specific styles */
+
+.gpu-option {
+    margin-right: 10px;
+    margin-bottom: 10px;
+    min-width: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+    padding: 0 15px;
+}
+
+.gpu-node-option {
+    margin-right: 10px;
+    margin-bottom: 10px;
+    min-width: 160px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+}
+
+.port-entry {
+    margin-bottom: 10px;
+}
+
+/* Selection styles with higher priority selectors */
+.button.is-selected,
+.buttons .button.is-selected {
+    background-color: #3273dc !important;
+    border-color: #3273dc !important;
+    color: white !important;
+    font-weight: bold !important;
+    box-shadow: 0 0 0 2px rgba(50, 115, 220, 0.5) !important;
+}
+
+/* UI Improvements */
+.main-form {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.form-section {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.section-title {
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #363636;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.section-content {
+    padding: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #4a5568;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: #4299e1;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+}
+
+.current-value {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    color: #718096;
+}
+
+.label {
+    font-weight: 500;
+}
+
+.button.primary {
+    background-color: #3273dc;
+    color: white;
+    font-weight: 500;
+    padding: 0 20px;
+    height: 40px;
+}
+
+.button.primary:hover {
+    background-color: #276cda;
+}
+
+/* Resource Allocation Preview styles */
+.resource-preview-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.resource-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+}
+
+.resource-item:not(:last-child) {
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.resource-value {
+    font-weight: 500;
+    color: #363636;
+}
+
+.icon-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Resource Matching Analysis styles */
+.resource-match-analysis {
+    margin-top: 16px;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    padding-top: 15px;
+}
+
+#resource-matching-analysis {
+    margin-top: 20px;
+    padding-top: 15px;
+}
+
+.match-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 4px 0 2px;
+    font-size: 0.7rem;
+    vertical-align: middle;
+    position: relative;
+}
+
+.match-status.good {
+    color: #2f855a;
+}
+
+.match-status.poor {
+    color: #c53030;
+}
+
+.match-status.good i,
+.match-status.poor i {
+    font-size: 11px;
+    position: relative;
+    top: -1px;
+    left: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 8px;
+    background-color: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+.progress-bar {
+    height: 100%;
+    border-radius: 4px;
+}
+
+.progress-bar.memory {
+    background-color: #4299e1;
+}
+
+.progress-bar.gpu {
+    background-color: #9f7aea;
+}
+
+.usage-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #718096;
+    margin-top: 4px;
+}
+
+.resource-match-item {
+    margin-bottom: 16px;
+}
+
+.resource-match-label {
+    font-weight: 500;
+    color: #4a5568;
+}
+
+@media screen and (min-width: 768px) {
+    .resource-preview-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.gpu-buttons-container,
+.gpu-node-buttons-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+/* Selected button styles */
+.button.is-selected.gpu-option,
+.button.is-selected.gpu-node-option {
+    border-color: #3273dc;
+    box-shadow: 0 0 0 1px #3273dc;
+}
+
+/* Resource Allocation Preview styles */
+#resource-allocation-preview {
+    margin-top: 20px;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    padding-top: 15px;
+}
+
+/* Image Metadata Styles */
+#image-metadata-container {
+    background-color: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    margin-top: 15px;
+    padding: 25px;
+    border: 1px solid #e2e8f0;
+}
+
+/* Markdown styles */
+#image-metadata-content {
+    font-family: 'IBM Plex Sans', sans-serif;
+    line-height: 1.6;
+}
+
+#image-metadata-content h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-top: 0.5em;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 5px;
+}
+
+#image-metadata-content p {
+    margin-bottom: 10px;
+    color: #4a5568;
+}
+
+#image-metadata-content strong {
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.scenario-tag {
+    display: inline-block;
+    margin-right: 8px;
+    color: #2c5282;
+    font-weight: 500;
+    margin-bottom: 5px;
+    background-color: #ebf4ff;
+    padding: 3px 10px;
+    border-radius: 12px;
+    border: 1px solid #bee3f8;
+}
+
+@media screen and (min-width: 768px) {
+    .metadata-section {
+        flex-direction: row;
+    }
+    
+    .metadata-label {
+        width: 180px;
+        margin-bottom: 0;
+    }
+    
+    .metadata-value {
+        flex: 1;
+    }
+}
+
+/* Beautify image selection dropdown */
+select[name="master_image"] {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 1rem;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+    padding-right: 2.5rem;
+}
+
+/* Markdown styles */
+.markdown-body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    word-wrap: break-word;
+}
+
+.markdown-body h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-top: 0.5em;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 5px;
+}
+
+.markdown-body p {
+    margin-bottom: 16px;
+}
+
+.markdown-body strong {
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.metadata-text {
+    font-family: 'IBM Plex Sans', sans-serif;
+    white-space: pre-wrap;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333;
+    background-color: white;
+    padding: 0;
+    border: none;
+    margin: 0;
+}
+
+/* Resource Allocation Preview styles */
+#resource-allocation-preview .fa-check-circle,
+#resource-allocation-preview .fa-exclamation-circle {
+    font-size: 11px;
+    cursor: help;
+}
+
+#resource-allocation-preview .fa-check-circle {
+    color: #38a169;
+}
+
+#resource-allocation-preview .fa-exclamation-circle {
+    color: #e53e3e;
+}
+
+/* Custom tooltip styles */
+[data-tooltip] {
+    position: relative;
+    cursor: help;
+}
+
+[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(51, 51, 51, 0.95);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    z-index: 100;
+    pointer-events: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    letter-spacing: 0.2px;
+    text-transform: capitalize;
+}
+
+[data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Status icons container */
+.status-icons-container {
+    /* All styles have been moved to HTML in-line styles */
+}
+
+/* Match status positioning */
+#match-status-good,
+#match-status-poor {
+    /* All styles have been moved to HTML in-line styles */
+}
+
+/* Make all icons same position */
+.match-status i {
+    /* All styles have been moved to HTML in-line styles */
+}
+
+/* Icon colors */
+.fa-check-circle,
+.fa-exclamation-circle {
+    /* All styles have been moved to HTML in-line styles */
+}
+
+.fa-check-circle {
+    color: #38a169;
+}
+
+.fa-exclamation-circle {
+    color: #e53e3e;
+}

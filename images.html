@@ -740,7 +740,7 @@
                                 <td>${image.name}</td>
                                 <td>${image.tag}</td>
                                 <td>${size}</td>
-                                <td>${new Date(image.created_at || image.inserted_at).toLocaleString()}</td>
+                                <td>${new Date(image.inserted_at).toLocaleString()}</td>
                                 <td><a href="#" class="view-button" onclick="showDetails('${encodeURIComponent(JSON.stringify(image))}')"><i class="fas fa-circle-info"></i> View</a></td>
                                 <td>
                                     <div class="action-buttons">
@@ -758,7 +758,7 @@
                                 <td>${image.name}</td>
                                 <td>${image.tag}</td>
                                 <td>${size}</td>
-                                <td>${new Date(image.created_at || image.inserted_at).toLocaleString()}</td>
+                                <td>${new Date(image.inserted_at).toLocaleString()}</td>
                                 <td><a href="#" class="view-button" onclick="showDetails('${encodeURIComponent(JSON.stringify(image))}')"><i class="fas fa-circle-info"></i> View</a></td>
                                 <td>
                                     <div class="action-buttons">
@@ -825,7 +825,7 @@
         function deleteImage(registry_host, name, tag, digest) {
             console.log("Deleting image:", registry_host, name, tag, digest);
             let resultNotificationId;
-            if (registry_host.includes('public')) {
+            if (registry_host.includes('10.100.100.1:5000')) {
                 resultNotificationId = "deleteResultInPublic";
             } else {
                 resultNotificationId = "deleteResultInPrivate";

@@ -257,7 +257,10 @@
                     const metadataContainer = document.getElementById('image-metadata-container');
                     const commandInput = document.querySelector('input[name="command"]');
                     const portInput = document.querySelector('.exposed-port'); 
+<<<<<<< HEAD
                     const statusIconsContainer = document.getElementById('status-icons-container');
+=======
+>>>>>>> 06d1b7e33e1af087349ece968bdf9659ae536a51
                     
                     // If no image is selected, hide all content and return
                     if (!selectedImage) {
@@ -265,6 +268,7 @@
                         if (metadataContainer) metadataContainer.style.display = 'none';
                         if (commandInput) commandInput.value = '';
                         if (portInput) portInput.value = ''; 
+<<<<<<< HEAD
                         
                         // Hide resource matching status icons
                         const matchStatusGoodElement = document.getElementById('match-status-good');
@@ -293,6 +297,84 @@
                         if(statusIconsContainer) statusIconsContainer.style.display = 'none';
                         
                         return;
+=======
+                        return;
+                    }
+                    
+                    // Find selected image
+                    const selectedImageObj = window.imagesData.images.find(img => img.full_name === selectedImage);
+                    
+                    if (selectedImageObj) {
+                        // Image name display style
+                        const displayName = getDisplayModelName(selectedImageObj.name);
+                        
+                        // Set default entrypoint (if exists)
+                        if (commandInput) {
+                            if (selectedImageObj.default_entrypoint) {
+                                commandInput.value = selectedImageObj.default_entrypoint;
+                            } else {
+                                commandInput.value = '';
+                            }
+                        }
+                        
+                        // Set default port (if exists)
+                        if (portInput && selectedImageObj.default_port) {
+                            portInput.value = selectedImageObj.default_port;
+                        } else if (portInput) {
+                            portInput.value = '';
+                        }
+                        
+                        // Build metadata HTML
+                        let metadataHTML = `
+                            <div class="metadata-title">${displayName}</div>`;
+                        
+                        // Add description if exists
+                        if (selectedImageObj.description) {
+                            metadataHTML += `
+                            <div class="metadata-item">
+                                <div class="metadata-label">Description:</div>
+                                <div class="metadata-value">${selectedImageObj.description}</div>
+                            </div>`;
+                        }
+                        
+                        // Add applicable scenarios if exists
+                        if (selectedImageObj.applicable_scenarios) {
+                            metadataHTML += `
+                            <div class="metadata-item">
+                                <div class="metadata-label">Applicable scenarios:</div>
+                                <div class="metadata-value">${selectedImageObj.applicable_scenarios}</div>
+                            </div>`;
+                        }
+                        
+                        // Add recommended configuration if exists
+                        if (selectedImageObj.recommended_configuration) {
+                            metadataHTML += `
+                            <div class="metadata-item">
+                                <div class="metadata-label">Recommended configuration:</div>
+                                <div class="metadata-value">${selectedImageObj.recommended_configuration}</div>
+                            </div>`;
+                        }
+                        
+                        // Add GitHub repository link if exists
+                        if (selectedImageObj.github_repo) {
+                            metadataHTML += `
+                            <div class="metadata-item">
+                                <div class="metadata-label">Source file link:</div>
+                                <div class="metadata-value">
+                                    <a href="${selectedImageObj.github_repo}" target="_blank">${selectedImageObj.github_repo}</a>
+                                </div>
+                            </div>`;
+                        }
+                        
+                        // Update metadata content and display
+                        metadataContent.innerHTML = metadataHTML;
+                        metadataContainer.style.display = 'block';
+                    } else {
+                        // Image not found, hide metadata
+                        if (metadataContainer) metadataContainer.style.display = 'none';
+                        if (commandInput) commandInput.value = '';
+                        if (portInput) portInput.value = ''; 
+>>>>>>> 06d1b7e33e1af087349ece968bdf9659ae536a51
                     }
                     
                     // Found the image, process image information
@@ -781,6 +863,7 @@
                     const selectedImageData = window.imagesData && window.imagesData.images ? 
                         window.imagesData.images.find(img => img.full_name === selectedImage) : null;
                     
+<<<<<<< HEAD
                     // If the image does not have the minimum_gpu_memory property, hide matching status
                     if (!selectedImageData || !selectedImageData.minimum_gpu_memory || selectedImageData.minimum_gpu_memory.toString().trim() === '') {
                         matchStatusGoodElement.style.display = 'none';
@@ -789,6 +872,10 @@
                         const statusIconsContainer = document.getElementById('status-icons-container');
                         if(statusIconsContainer) statusIconsContainer.style.display = 'none';
                         
+=======
+                    // Check if minimum GPU memory requirement exists
+                    if (!selectedImageData || !selectedImageData.minimum_gpu_memory) {
+>>>>>>> 06d1b7e33e1af087349ece968bdf9659ae536a51
                         return;
                     }else{
                         // Show matching status icons

@@ -417,7 +417,21 @@ select[name="master_image"] {
 /* Match status positioning */
 #match-status-good,
 #match-status-poor {
-    /* All styles have been moved to HTML in-line styles */
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: none; /* Default to hidden */
+}
+
+/* Ensure the status icon container has relative positioning */
+.status-icons-container {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+    margin-right: 4px;
+    position: relative;
+    vertical-align: middle;
+    margin: 0 2px;
 }
 
 /* Make all icons same position */

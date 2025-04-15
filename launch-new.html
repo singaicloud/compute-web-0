@@ -276,7 +276,7 @@
                         return;
                     }
                     
-                    // Find the selected image
+                    // Find the selected image from all image data
                     const selectedImageObj = window.imagesData.images.find(img => img.full_name === selectedImage);
                     
                     // If the image is not found, hide all content
@@ -395,12 +395,12 @@
 
                 // Check resource matching status
                 function updateResourceMatchingStatus(selectedImageObj, gpuType, gpuCount) {
-                    // Get matching status elements
+                    // Get match status elements
                     const matchStatusGoodElement = document.getElementById('match-status-good');
                     const matchStatusPoorElement = document.getElementById('match-status-poor');
                     const statusIconsContainer = document.getElementById('status-icons-container');
                     
-                    // Default hide matching status
+                    // Hide match status by default
                     if(matchStatusGoodElement) matchStatusGoodElement.style.display = 'none';
                     if(matchStatusPoorElement) matchStatusPoorElement.style.display = 'none';
 
@@ -432,7 +432,7 @@
                     // Calculate total GPU memory
                     const totalMemoryGb = gpuMemoryGb * gpuCount;
 
-                    // Get minimum GPU memory requirement by the image
+                    // Get image's minimum GPU memory requirement by the image
                     let minimumGpuMemory = 0;
                     if(selectedImageObj.minimum_gpu_memory){
                         if(!isNaN(selectedImageObj.minimum_gpu_memory)){
@@ -726,7 +726,7 @@
                 function updateResourceAllocationPreview(gpuSku, gpuCount, nodeCount) {
                     const previewContainer = document.getElementById('resource-allocation-preview');
                     
-                    // Initialize variables
+                    // Get selected GPU information
                     let gpuName = '';
                     let cpuCoresPerGpu = 0;
                     let memoryGbPerGpu = 0;
@@ -758,21 +758,21 @@
                     document.getElementById('preview-cpu-info').textContent = `${totalCpuCores} cores (automatically assigned)`;
                     document.getElementById('preview-memory-info').textContent = `${totalMemoryGb}Gi (automatically assigned)`;
                     
-                    // Display preview container
+                    // Show preview container
                     previewContainer.style.display = 'block';
                     
                     // Get current selected image
                     const selectedImage = document.querySelector('select[name="master_image"]').value;
                     
-                    // Get matching status elements
+                    // Get match status elements
                     const matchStatusGoodElement = document.getElementById('match-status-good');
                     const matchStatusPoorElement = document.getElementById('match-status-poor');
                     
-                    // Default hide matching status
+                    // Hide match status by default
                     matchStatusGoodElement.style.display = 'none';
                     matchStatusPoorElement.style.display = 'none';
                     
-                    // If no image is selected, do not perform resource matching analysis
+                    // If no image selected, don't perform resource matching analysis
                     if (!selectedImage) {
                         return;
                     }
@@ -796,32 +796,33 @@
                         if(statusIconsContainer) statusIconsContainer.style.display = 'inline-block';
                     }
                     
-                    // Get minimum GPU memory requirement
+                    // Get image's minimum GPU memory requirement
                     let minimumGpuMemory = 0;
                     
                     if (!isNaN(selectedImageData.minimum_gpu_memory)) {
                         minimumGpuMemory = parseInt(selectedImageData.minimum_gpu_memory);
                     } else if (typeof selectedImageData.minimum_gpu_memory === 'string') {
+                        // Try to extract number from string
                         const memoryMatch = selectedImageData.minimum_gpu_memory.match(/(\d+)/);
                         if (memoryMatch) {
                             minimumGpuMemory = parseInt(memoryMatch[1]);
                         }
                     }
                     
-                    // If unable to get minimum GPU memory requirement, do not display matching analysis
+                    // If unable to get minimum GPU memory requirement, don't show match analysis
                     if (minimumGpuMemory <= 0) {
                         return;
                     }
                     
-                    // Calculate total GPU memory configured by user - this is the key modification point
+                    // Calculate user's total configured GPU memory
                     const totalGpuMemory = gpuMemoryGb * gpuCount * nodeCount;
                     
-                    // Based on comparison of total GPU memory with minimum requirement, determine matching status
+                    // Based on total GPU memory comparison with minimum requirement, determine match status
                     if (totalGpuMemory >= minimumGpuMemory) {
                         // Good match, display Good label
                         matchStatusGoodElement.style.display = 'inline-flex';
                     } else {
-                        // Resource insufficient, display Below Requirements label
+                        // Insufficient resources, show Below Requirements label
                         matchStatusPoorElement.style.display = 'inline-flex';
                     }
                 }
